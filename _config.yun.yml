@@ -1,0 +1,7 @@
+# 代码复制按钮
+codeblock:
+   copy_btn: true
+   
+prismjs:
+   light: prism-dark
+   dark: prism-funky
