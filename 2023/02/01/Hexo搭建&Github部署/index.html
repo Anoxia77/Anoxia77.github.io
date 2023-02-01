@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Anoxia小屋
+    </title>
+    <meta name="description" content= 在搬砖的路上越走越远！ >
+    <meta name="keywords" content= Java,摄影,后端,宅 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            Hexo搭建&amp;Github部署
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="hexo-下载与构建"><a href="#hexo-下载与构建" class="headerlink" title="hexo 下载与构建"></a>hexo 下载与构建</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/setup">https://hexo.io/zh-cn/docs/setup</a> 安装&amp;搭建教程</p>
+</blockquote>
+<p>基本步骤</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载</span></span><br><span class="line">npm install -g hexo-cli</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">添加环境变量 把hexo 安装目录下的 node_moudle 目录添加到环境变量，这样就可以直接使用 hexo 命令了</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">随便找一个目录,初始化，进入，下载依赖</span></span><br><span class="line">hexo init my-blog</span><br><span class="line">cd my-blog</span><br><span class="line">npm install</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后修改 _config.yml 配置文件 跟着 配置介绍修改https://hexo.io/zh-cn/docs/configuration</span></span><br></pre></td></tr></table></figure>
+<p>到这里，在本地的hexo 就基本构建成功了。<br>这个时候可以使用 <code>hexo server</code>启动试一下，看能不能启动访问。</p>
+<h2 id="部署到github或gitee"><a href="#部署到github或gitee" class="headerlink" title="部署到github或gitee"></a>部署到github或gitee</h2><p>操作是一样，只记录 部署到 github 的操作<br>首先，最好检查一下自己是否有 添加github的私钥，因为要提交，没有的话，到时候可能会要输入密码，反正弄起来很 <strong>烦。</strong>所以建议，先把私钥加好。这样后面的操作就会<code>很丝滑</code>，私钥没有配，不知道咋配，可以看一下这个，有大佬写的很详细，我就直接搬了 <a target="_blank" rel="noopener" href="https://www.shuzhiduo.com/A/MAzAqP1z9p/">https://www.shuzhiduo.com/A/MAzAqP1z9p/</a><br>首先 创建一个 <code>&lt;你Github的用户名&gt;.github.io</code> 的代码仓库。然后打开刚刚创建的博客目录，我这里都以<code>my-blog</code>记录，后面说这个文件的时候，你就要知道，这是哪个东西。<br>打开 <code>_config.yml</code>文件，找到下面 的内容,如果第一次弄的话，这里应该只有一个 deploy，可以直接在这个文件里面搜<code>deploy</code>。然后把你上面建的 github仓库地址加上。到这一步就快完成了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Deployment</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># Docs: https://hexo.io/docs/one-command-deployment</span></span></span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repository:</span><br><span class="line">    github: git@github.com:Anoxia77/Anoxia77.github.io.git</span><br></pre></td></tr></table></figure>
+<p>在这里有个坑，下面的这个配置，好像默认的文档 url 默认是 有加一个 xxxx&#x2F;projet ,这个project 要注意一下，如果自己的目录有就加，没有就不要加，不然到时候 css，js文件就会找不到</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">URL</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># Set your site url here. For example, if you use GitHub Page, set url as &#x27;https://username.github.io/project&#x27;</span></span></span><br><span class="line">url: https://Anoxia77.github.io</span><br><span class="line">permalink: :year/:month/:day/:title/</span><br><span class="line">permalink_defaults:</span><br><span class="line">pretty_urls:</span><br><span class="line">  trailing_index: true # Set to false to remove trailing &#x27;index.html&#x27; from permalinks</span><br><span class="line">  trailing_html: true # Set to false to remove trailing &#x27;.html&#x27; from permalinks</span><br></pre></td></tr></table></figure>
+<p>然后就可以直接开始打包部署了，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean 清除上一次打包的</span><br><span class="line">hexo g 构建</span><br><span class="line">hexo d 打包 打包需要安装一个插件 npm install --save hexo-deployer-git</span><br></pre></td></tr></table></figure>
+<p>打包完成后，会把静态代码上传到你创建的哪个仓库，然后就可以看了。我的地址就是  <a href="https://anoxia77.github.io/">https://anoxia77.github.io</a>  ,换一下前面的名称就可以了。</p>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: 阿乐 | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
