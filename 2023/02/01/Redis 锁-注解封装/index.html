@@ -1,142 +1,42 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <meta name="theme-color" content="#3367D6"/>
-  <link rel="apple-touch-icon" href="/icons-192.png">
-  <link rel="manifest" href="/manifest.json">
-  
-
-
-  <meta name="generator" content="Hexo 6.3.0">
-
-  
-    <meta name="description" content="知识备份">
-  
-
-  
-    <meta name="keywords" content="JAVA，摄影，后端">
-  
-
-  
-    <meta name="author" content="huangle">
-  
-
-  
-
-  
-
-  <title>Redis锁-注解封装 | Anoxia小屋</title>
-
-  
-
-  
-    <link rel="shortcut icon" href="/favicon.ico">
-  
-
-  
-
-  
-
-  
-<link rel="stylesheet" href="/css/style.css">
-
-</head>
-<body>
-  <div class="root-container">
-    
-<!-- header container -->
-<header class="header-container post">
-  
-    <div class="post-image" style="background-image: url(https://qiniu.sukoshi.xyz/src/images/68686407_p0.jpg)"></div>
-  
-
-  <!-- navbar -->
-<nav class="navbar">
-  <div class="navbar-content">
-    <!-- logo -->
-    <div class="navbar-logo">
-      <a href="/">
-        
-          Anoxia小屋
-        
-      </a>
-    </div>
-    <!-- link -->
-    <div class="navbar-link">
-      <div class="navbar-btn">
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-      <ul class="navbar-list">
-        
-          <li class="navbar-list-item"><a href="/">首页</a></li>
-        
-          <li class="navbar-list-item"><a href="/links">友链</a></li>
-        
-          <li class="navbar-list-item"><a href="/about">关于</a></li>
-        
-      </ul>
-    </div>
-  </div>
-</nav>
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-    <div class="header-content">
-      <div class="post-text layout-block">
-        <div class="layout-margin">
-          <h1 class="title-wrap">Redis锁-注解封装</h1>
-          <h2 class="title-sub-wrap">
-            <strong>huangle</strong>
-            <span>发布于</span>
-            <time  class="article-date" datetime="2023-02-01T09:30:54.557Z" itemprop="datePublished">2023-02-01</time>
-          </h2>
-          
-          
-          <ul class="wrap-list dark">
-  
-</ul>
-          <ul class="wrap-list dark">
-  
-</ul>
-        </div>
-      </div>
-    </div>
-  
-
-  
-  
-  
-</header>
-
-    <!-- 文章 -->
-
-<!-- 文章内容 -->
-<div class="body-container">
-  <article class="content-container layout-block post-container">
-    <div class="article-info">
-      
-      
-      
-      
-      <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>简单封装redis的锁，在使用上提升体验度，对于一些简单的业务，可以直接使用注解封装锁，来控制并发。</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="huangle"><meta name="copyright" content="huangle"><meta name="generator" content="Hexo 6.3.0"><meta name="theme" content="hexo-theme-yun"><title>Redis锁-注解封装 | Anoxia小屋</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"anoxia77.github.io","root":"/","title":"云游君的小站","version":"1.10.9","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://el-bot-api.vercel.app/api/words/young"},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><meta name="description" content="前言简单封装redis的锁，在使用上提升体验度，对于一些简单的业务，可以直接使用注解封装锁，来控制并发。 设计一般来说，使用redis分布式锁，就是对一个key进行setnx，或者检查key是否已经存在，如果存在表示已经加锁。所以我们首先梳理一下 key 的结构，key 通常都是 使用 业务描述 + 唯一业务字段 来唯一性确定一个key，例如这样 key &#x3D; redisLock:orde">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis锁-注解封装">
+<meta property="og:url" content="https://anoxia77.github.io/2023/02/01/Redis%20%E9%94%81-%E6%B3%A8%E8%A7%A3%E5%B0%81%E8%A3%85/index.html">
+<meta property="og:site_name" content="Anoxia小屋">
+<meta property="og:description" content="前言简单封装redis的锁，在使用上提升体验度，对于一些简单的业务，可以直接使用注解封装锁，来控制并发。 设计一般来说，使用redis分布式锁，就是对一个key进行setnx，或者检查key是否已经存在，如果存在表示已经加锁。所以我们首先梳理一下 key 的结构，key 通常都是 使用 业务描述 + 唯一业务字段 来唯一性确定一个key，例如这样 key &#x3D; redisLock:orde">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-01T09:30:54.557Z">
+<meta property="article:modified_time" content="2023-02-01T09:30:54.557Z">
+<meta property="article:author" content="huangle">
+<meta property="article:tag" content="JAVA，摄影，后端">
+<meta name="twitter:card" content="summary"><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="huangle"><img width="96" loading="lazy" src="/yun.png" alt="huangle"></a><div class="site-author-name"><a href="/about/">huangle</a></div><span class="site-name">Anoxia小屋</span><sub class="site-subtitle">知道的越多，不知道的越多</sub><div class="site-description">知识备份</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">5</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">0</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">0</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:settings-line"></span></span></a></nav><hr style="margin-bottom:0.5rem"><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:genderless-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E6%B3%A8%E8%A7%A3"><span class="toc-number">3.1.</span> <span class="toc-text">方法注解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5%E6%B3%A8%E8%A7%A3"><span class="toc-number">3.2.</span> <span class="toc-text">字段注解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E8%A7%A3%E5%88%87%E9%9D%A2"><span class="toc-number">3.3.</span> <span class="toc-text">注解切面</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-number">4.</span> <span class="toc-text">测试</span></a></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="https://Anoxia77.github.io/2023/02/01/Redis%20%E9%94%81-%E6%B3%A8%E8%A7%A3%E5%B0%81%E8%A3%85/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="huangle"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Anoxia小屋"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">Redis锁-注解封装</h1><div class="post-meta"><div class="post-time"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2023-02-01 17:30:54" itemprop="dateCreated datePublished" datetime="2023-02-01T17:30:54+08:00">2023-02-01</time></div><div class="post-classify"></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>简单封装redis的锁，在使用上提升体验度，对于一些简单的业务，可以直接使用注解封装锁，来控制并发。</p>
 <h3 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h3><p>一般来说，使用redis分布式锁，就是对一个key进行setnx，或者检查key是否已经存在，如果存在表示已经加锁。<br>所以我们首先梳理一下 key 的结构，key 通常都是 使用 <code>业务描述</code> + <code>唯一业务字段</code> 来唯一性确定一个key，例如这样 key &#x3D; <code>redisLock:orderShop:1000000001</code><br>把key 简单的分为三段</p>
 <ul>
 <li>reidsLock 表示这是一个锁，</li>
@@ -145,679 +45,257 @@
 </ul>
 <p>对于系统来说 第一个一般是相同的，因为设计可以方便后面找这个key。所以我们主要需要关注的就是后面两个值，业务场景一般对于一种场景来说都是一样是。所以这个我们可以通过一个值传进去。后面的具体业务字段就不一定了，在同一个业务中，可以需要不同的业务字段来做为锁，所以这里需要在进行变化一下。需要允许多个 业务字段来做为锁。<br>一般来说，我们锁的都是方法，或者说是方法里面的某一些执行逻辑，对于没有事务的业务来说，我们可以通过这种方法简单的控制。（如果有事务的话，可能就要考虑锁粒度的问题，因为大锁可能会导致事务过长）</p>
 <h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>前面我们提到，锁的话主要都是作用在方法层面的，所以我们可以给方法加一个注解。对于业务参数来说，他就是方法的参数，那么我们可以考虑给方法参数也加一个注解来注入值。<br>使用的Maven包</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&lt;dependency&gt;
-      &lt;groupId&gt;org.springframework&lt;&#x2F;groupId&gt;
-      &lt;artifactId&gt;spring-aspects&lt;&#x2F;artifactId&gt;
-&lt;&#x2F;dependency&gt;
-&lt;dependency&gt;
-      &lt;groupId&gt;org.redisson&lt;&#x2F;groupId&gt;
-      &lt;artifactId&gt;redisson-spring-boot-starter&lt;&#x2F;artifactId&gt;
-      &lt;version&gt;3.17.7&lt;&#x2F;version&gt;
-&lt;&#x2F;dependency&gt;</code></pre>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token generics"><span class="token punctuation">&lt;</span>dependency<span class="token punctuation">></span></span>
+      <span class="token generics"><span class="token punctuation">&lt;</span>groupId<span class="token punctuation">></span></span>org<span class="token punctuation">.</span>springframework<span class="token operator">&lt;</span><span class="token operator">/</span>groupId<span class="token operator">></span>
+      <span class="token generics"><span class="token punctuation">&lt;</span>artifactId<span class="token punctuation">></span></span>spring<span class="token operator">-</span>aspects<span class="token operator">&lt;</span><span class="token operator">/</span>artifactId<span class="token operator">></span>
+<span class="token operator">&lt;</span><span class="token operator">/</span>dependency<span class="token operator">></span>
+<span class="token generics"><span class="token punctuation">&lt;</span>dependency<span class="token punctuation">></span></span>
+      <span class="token generics"><span class="token punctuation">&lt;</span>groupId<span class="token punctuation">></span></span>org<span class="token punctuation">.</span>redisson<span class="token operator">&lt;</span><span class="token operator">/</span>groupId<span class="token operator">></span>
+      <span class="token generics"><span class="token punctuation">&lt;</span>artifactId<span class="token punctuation">></span></span>redisson<span class="token operator">-</span>spring<span class="token operator">-</span>boot<span class="token operator">-</span>starter<span class="token operator">&lt;</span><span class="token operator">/</span>artifactId<span class="token operator">></span>
+      <span class="token generics"><span class="token punctuation">&lt;</span>version<span class="token punctuation">></span></span><span class="token number">3.17</span><span class="token number">.7</span><span class="token operator">&lt;</span><span class="token operator">/</span>version<span class="token operator">></span>
+<span class="token operator">&lt;</span><span class="token operator">/</span>dependency<span class="token operator">></span></code></pre>
 <h4 id="方法注解"><a href="#方法注解" class="headerlink" title="方法注解"></a>方法注解</h4><p>注解主要的参数就是一些常用的参数，可以根据自己的需要加添加或删除</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">
-&#x2F;**
+<pre class="language-java" data-language="java"><code class="language-java">
+<span class="token comment">/**
  * redis 锁注解
  * @author huangle
- *&#x2F;
-@Target(ElementType.METHOD)
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RedisLock &#123;
+ */</span>
+<span class="token annotation punctuation">@Target</span><span class="token punctuation">(</span><span class="token class-name">ElementType</span><span class="token punctuation">.</span><span class="token constant">METHOD</span><span class="token punctuation">)</span>
+<span class="token annotation punctuation">@Documented</span>
+<span class="token annotation punctuation">@Retention</span><span class="token punctuation">(</span><span class="token class-name">RetentionPolicy</span><span class="token punctuation">.</span><span class="token constant">RUNTIME</span><span class="token punctuation">)</span>
+<span class="token keyword">public</span> <span class="token annotation punctuation">@interface</span> <span class="token class-name">RedisLock</span> <span class="token punctuation">&#123;</span>
 
-    &#x2F;**
+    <span class="token comment">/**
      * 锁前缀
-     *&#x2F;
-    String prefix() default &quot;redis:Lock&quot;;
+     */</span>
+    <span class="token class-name">String</span> <span class="token function">prefix</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">default</span> <span class="token string">"redis:Lock"</span><span class="token punctuation">;</span>
 
-    &#x2F;**
+    <span class="token comment">/**
      * 加锁时间
-     *&#x2F;
-    long lockTime() default 30;
+     */</span>
+    <span class="token keyword">long</span> <span class="token function">lockTime</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">default</span> <span class="token number">30</span><span class="token punctuation">;</span>
 
-    boolean tryLock() default true;
+    <span class="token keyword">boolean</span> <span class="token function">tryLock</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">default</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
 
-    &#x2F;**
+    <span class="token comment">/**
      * 加锁不成功的等待时间 -1 不等待
-     *&#x2F;
-    long waitTime() default -1;
+     */</span>
+    <span class="token keyword">long</span> <span class="token function">waitTime</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">default</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
 
-    &#x2F;**
+    <span class="token comment">/**
      * 锁时间类型
-     *&#x2F;
-    TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
+     */</span>
+    <span class="token class-name">TimeUnit</span> <span class="token function">timeUnit</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">default</span> <span class="token class-name">TimeUnit</span><span class="token punctuation">.</span><span class="token constant">MILLISECONDS</span><span class="token punctuation">;</span>
 
 
 
-&#125;
+<span class="token punctuation">&#125;</span>
 </code></pre>
 <h4 id="字段注解"><a href="#字段注解" class="headerlink" title="字段注解"></a>字段注解</h4><p>这个注解主要的作用就是帮助我们注入可变的业务参数，我们直接添加到方法参数上面，来获取到他的值</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">/**
  * 锁字段注解
  * 用于生成 key
  * @author huangle
- *&#x2F;
-@Target(ElementType.PARAMETER)
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface LockField &#123;
+ */</span>
+<span class="token annotation punctuation">@Target</span><span class="token punctuation">(</span><span class="token class-name">ElementType</span><span class="token punctuation">.</span><span class="token constant">PARAMETER</span><span class="token punctuation">)</span>
+<span class="token annotation punctuation">@Documented</span>
+<span class="token annotation punctuation">@Retention</span><span class="token punctuation">(</span><span class="token class-name">RetentionPolicy</span><span class="token punctuation">.</span><span class="token constant">RUNTIME</span><span class="token punctuation">)</span>
+<span class="token keyword">public</span> <span class="token annotation punctuation">@interface</span> <span class="token class-name">LockField</span> <span class="token punctuation">&#123;</span>
 
-    &#x2F;**
+    <span class="token comment">/**
      * 锁标识字段，没有则取当前参数值，有则按顺序反射取参数对象字段值
      * @return
-     *&#x2F;
-    String[] values() default &#123;&#125;;
+     */</span>
+    <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">values</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">default</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
 
-&#125;
+<span class="token punctuation">&#125;</span>
 </code></pre>
 <h4 id="注解切面"><a href="#注解切面" class="headerlink" title="注解切面"></a>注解切面</h4><p>注解切面，使用aop的思想，来对注解进行拦截，然后加锁，使用的是 redssion 来进行的加锁操作</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">/**
  * @author huangle
- * @date 2022&#x2F;12&#x2F;8 9:54
- *&#x2F;
-@Slf4j
-@Aspect
-@Component
-public class RedisLockAspect &#123;
+ * @date 2022/12/8 9:54
+ */</span>
+<span class="token annotation punctuation">@Slf4j</span>
+<span class="token annotation punctuation">@Aspect</span>
+<span class="token annotation punctuation">@Component</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">RedisLockAspect</span> <span class="token punctuation">&#123;</span>
 
-    @Resource
-    private RedissonClient redissonClient;
+    <span class="token annotation punctuation">@Resource</span>
+    <span class="token keyword">private</span> <span class="token class-name">RedissonClient</span> redissonClient<span class="token punctuation">;</span>
 
-    &#x2F;**
-     * key 格式 REDIS_LOCK_PREFIX + SEPARATOR + prefix + SEPARATOR + field&#x2F;fieldName
-     *&#x2F;
-    private static final String REDIS_LOCK_PREFIX &#x3D; &quot;anoxiaLock&quot;;
+    <span class="token comment">/**
+     * key 格式 REDIS_LOCK_PREFIX + SEPARATOR + prefix + SEPARATOR + field/fieldName
+     */</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> <span class="token constant">REDIS_LOCK_PREFIX</span> <span class="token operator">=</span> <span class="token string">"anoxiaLock"</span><span class="token punctuation">;</span>
 
-    private static final String SEPARATOR &#x3D; &quot;:&quot;;
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> <span class="token constant">SEPARATOR</span> <span class="token operator">=</span> <span class="token string">":"</span><span class="token punctuation">;</span>
 
-    @Pointcut(&quot;@annotation(cn.anoxia.redis.common.annotation.RedisLock)&quot;)
-    public void doAspect() &#123;
-    &#125;
+    <span class="token annotation punctuation">@Pointcut</span><span class="token punctuation">(</span><span class="token string">"@annotation(cn.anoxia.redis.common.annotation.RedisLock)"</span><span class="token punctuation">)</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">doAspect</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">&#125;</span>
 
 
-    @Around(&quot;doAspect()&quot;)
-    public Object doLockAround(ProceedingJoinPoint point) throws Throwable &#123;
-        &#x2F;&#x2F; 获取方法
-        MethodSignature methodSignature &#x3D; (MethodSignature) point.getSignature();
-        Method method &#x3D; methodSignature.getMethod();
-        &#x2F;&#x2F; 获取注解
-        RedisLock redisLock &#x3D; method.getAnnotation(RedisLock.class);
-        &#x2F;&#x2F; 获取前缀
-        String prefix &#x3D; redisLock.prefix();
-        &#x2F;&#x2F; 获取字段
-        Parameter[] parameters &#x3D; method.getParameters();
-        &#x2F;&#x2F; 构建key
-        StringBuilder lockKeyStr &#x3D; new StringBuilder(prefix);
-        Object[] args &#x3D; point.getArgs();
-        int index &#x3D; -1;
-        LockField lockField;
-        &#x2F;&#x2F; 遍历所有字段
-        for (Parameter parameter : parameters) &#123;
-            Object arg &#x3D; args[++index];
-            &#x2F;&#x2F; 获取注解
-            lockField &#x3D; parameter.getAnnotation(LockField.class);
-            if (lockField &#x3D;&#x3D; null) &#123;
-                continue;
-            &#125;
-            String[] values &#x3D; lockField.values();
-            if (values &#x3D;&#x3D; null || values.length &#x3D;&#x3D; 0) &#123;
-                lockKeyStr.append(SEPARATOR).append(arg);
-            &#125; else &#123;
-                List&lt;Object&gt; filedValues &#x3D; ReflectionUtil.getFiledValues(parameter.getType(), arg, values);
-                for (Object filedValue : filedValues) &#123;
-                    lockKeyStr.append(SEPARATOR).append(filedValue);
-                &#125;
-            &#125;
-        &#125;
-        &#x2F;&#x2F; 获取锁
-        String key &#x3D; REDIS_LOCK_PREFIX + SEPARATOR + lockKeyStr.toString();
-        RLock lock &#x3D; redissonClient.getLock(key);
-        &#x2F;&#x2F; 加锁成功标志位，用于释放锁
-        boolean lockFlag &#x3D; false;
-        &#x2F;&#x2F; 尝试加锁
-        try &#123;
-            long lockTime &#x3D; redisLock.lockTime();
-            TimeUnit timeUnit &#x3D; redisLock.timeUnit();
-            long waitTime &#x3D; redisLock.waitTime();
-            boolean tryLock &#x3D; redisLock.tryLock();
-            try &#123;
-                if (tryLock) &#123;
-                    if (waitTime &gt; 0) &#123;
-                        &#x2F;&#x2F; 尝试加锁，没有成功就等待，waitTime 等待时间，如果超时就直接放弃
-                        lockFlag &#x3D; lock.tryLock(waitTime, lockTime, timeUnit);
-                    &#125; else &#123;
-                        &#x2F;&#x2F; 直接不等待，如果加锁失败就返回
-                        lockFlag &#x3D; lock.tryLock(-1,lockTime,timeUnit);
-                    &#125;
-                &#125; else &#123;
-                    lock.lock(lockTime, timeUnit);
-                    lockFlag &#x3D; true;
-                &#125;
-            &#125; catch (Exception e) &#123;
-                log.error(&quot;加锁失败！，错误信息：&#123;&#125;&quot;, e);
-                throw new RuntimeException(&quot;加锁失败！&quot;);
-            &#125;
-            if (!lockFlag)&#123;
-                throw new RuntimeException(&quot;加锁失败！&quot;);
-            &#125;
-            &#x2F;&#x2F; 加锁结束
-            &#x2F;&#x2F; 保证业务逻辑已经完成，在释放锁
-            Object proceed &#x3D; point.proceed();
-            return proceed;
-        &#125; finally &#123;
-            if (lockFlag) &#123;
-                log.info(&quot;释放锁,key:&#123;&#125;&quot;, key);
-                lock.unlock();
-            &#125;
-        &#125;
-    &#125;
+    <span class="token annotation punctuation">@Around</span><span class="token punctuation">(</span><span class="token string">"doAspect()"</span><span class="token punctuation">)</span>
+    <span class="token keyword">public</span> <span class="token class-name">Object</span> <span class="token function">doLockAround</span><span class="token punctuation">(</span><span class="token class-name">ProceedingJoinPoint</span> point<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Throwable</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// 获取方法</span>
+        <span class="token class-name">MethodSignature</span> methodSignature <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">MethodSignature</span><span class="token punctuation">)</span> point<span class="token punctuation">.</span><span class="token function">getSignature</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Method</span> method <span class="token operator">=</span> methodSignature<span class="token punctuation">.</span><span class="token function">getMethod</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取注解</span>
+        <span class="token class-name">RedisLock</span> redisLock <span class="token operator">=</span> method<span class="token punctuation">.</span><span class="token function">getAnnotation</span><span class="token punctuation">(</span><span class="token class-name">RedisLock</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取前缀</span>
+        <span class="token class-name">String</span> prefix <span class="token operator">=</span> redisLock<span class="token punctuation">.</span><span class="token function">prefix</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取字段</span>
+        <span class="token class-name">Parameter</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parameters <span class="token operator">=</span> method<span class="token punctuation">.</span><span class="token function">getParameters</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 构建key</span>
+        <span class="token class-name">StringBuilder</span> lockKeyStr <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span>prefix<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Object</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args <span class="token operator">=</span> point<span class="token punctuation">.</span><span class="token function">getArgs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token class-name">LockField</span> lockField<span class="token punctuation">;</span>
+        <span class="token comment">// 遍历所有字段</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Parameter</span> parameter <span class="token operator">:</span> parameters<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Object</span> arg <span class="token operator">=</span> args<span class="token punctuation">[</span><span class="token operator">++</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 获取注解</span>
+            lockField <span class="token operator">=</span> parameter<span class="token punctuation">.</span><span class="token function">getAnnotation</span><span class="token punctuation">(</span><span class="token class-name">LockField</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>lockField <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> values <span class="token operator">=</span> lockField<span class="token punctuation">.</span><span class="token function">values</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>values <span class="token operator">==</span> <span class="token keyword">null</span> <span class="token operator">||</span> values<span class="token punctuation">.</span>length <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                lockKeyStr<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token constant">SEPARATOR</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+                <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Object</span><span class="token punctuation">></span></span> filedValues <span class="token operator">=</span> <span class="token class-name">ReflectionUtil</span><span class="token punctuation">.</span><span class="token function">getFiledValues</span><span class="token punctuation">(</span>parameter<span class="token punctuation">.</span><span class="token function">getType</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> arg<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Object</span> filedValue <span class="token operator">:</span> filedValues<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                    lockKeyStr<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token constant">SEPARATOR</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>filedValue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token comment">// 获取锁</span>
+        <span class="token class-name">String</span> key <span class="token operator">=</span> <span class="token constant">REDIS_LOCK_PREFIX</span> <span class="token operator">+</span> <span class="token constant">SEPARATOR</span> <span class="token operator">+</span> lockKeyStr<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">RLock</span> lock <span class="token operator">=</span> redissonClient<span class="token punctuation">.</span><span class="token function">getLock</span><span class="token punctuation">(</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 加锁成功标志位，用于释放锁</span>
+        <span class="token keyword">boolean</span> lockFlag <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token comment">// 尝试加锁</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">long</span> lockTime <span class="token operator">=</span> redisLock<span class="token punctuation">.</span><span class="token function">lockTime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">TimeUnit</span> timeUnit <span class="token operator">=</span> redisLock<span class="token punctuation">.</span><span class="token function">timeUnit</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">long</span> waitTime <span class="token operator">=</span> redisLock<span class="token punctuation">.</span><span class="token function">waitTime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">boolean</span> tryLock <span class="token operator">=</span> redisLock<span class="token punctuation">.</span><span class="token function">tryLock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>tryLock<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>waitTime <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                        <span class="token comment">// 尝试加锁，没有成功就等待，waitTime 等待时间，如果超时就直接放弃</span>
+                        lockFlag <span class="token operator">=</span> lock<span class="token punctuation">.</span><span class="token function">tryLock</span><span class="token punctuation">(</span>waitTime<span class="token punctuation">,</span> lockTime<span class="token punctuation">,</span> timeUnit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+                        <span class="token comment">// 直接不等待，如果加锁失败就返回</span>
+                        lockFlag <span class="token operator">=</span> lock<span class="token punctuation">.</span><span class="token function">tryLock</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span>lockTime<span class="token punctuation">,</span>timeUnit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">&#125;</span>
+                <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+                    lock<span class="token punctuation">.</span><span class="token function">lock</span><span class="token punctuation">(</span>lockTime<span class="token punctuation">,</span> timeUnit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    lockFlag <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                log<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span><span class="token string">"加锁失败！，错误信息：&#123;&#125;"</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">RuntimeException</span><span class="token punctuation">(</span><span class="token string">"加锁失败！"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>lockFlag<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+                <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">RuntimeException</span><span class="token punctuation">(</span><span class="token string">"加锁失败！"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token comment">// 加锁结束</span>
+            <span class="token comment">// 保证业务逻辑已经完成，在释放锁</span>
+            <span class="token class-name">Object</span> proceed <span class="token operator">=</span> point<span class="token punctuation">.</span><span class="token function">proceed</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> proceed<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>lockFlag<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                log<span class="token punctuation">.</span><span class="token function">info</span><span class="token punctuation">(</span><span class="token string">"释放锁,key:&#123;&#125;"</span><span class="token punctuation">,</span> key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                lock<span class="token punctuation">.</span><span class="token function">unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
 
-&#125;
+<span class="token punctuation">&#125;</span>
 </code></pre>
 <p>使用的到的工具类，这个可以使用其他的也可以，只要可以实现就行</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">/**
  * @author huangle
- * @date 2022&#x2F;12&#x2F;8 10:26
- *&#x2F;
-public class ReflectionUtil &#123;
+ * @date 2022/12/8 10:26
+ */</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">ReflectionUtil</span> <span class="token punctuation">&#123;</span>
 
-    public static List&lt;Object&gt; getFiledValues(Class&lt;?&gt; type, Object target, String[] fieldNames) throws IllegalAccessException &#123;
-        List&lt;Field&gt; fields &#x3D; getFields(type, fieldNames);
-        List&lt;Object&gt; valueList &#x3D; new ArrayList();
-        Iterator fieldIterator &#x3D; fields.iterator();
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Object</span><span class="token punctuation">></span></span> <span class="token function">getFiledValues</span><span class="token punctuation">(</span><span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> type<span class="token punctuation">,</span> <span class="token class-name">Object</span> target<span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fieldNames<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IllegalAccessException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Field</span><span class="token punctuation">></span></span> fields <span class="token operator">=</span> <span class="token function">getFields</span><span class="token punctuation">(</span>type<span class="token punctuation">,</span> fieldNames<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Object</span><span class="token punctuation">></span></span> valueList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Iterator</span> fieldIterator <span class="token operator">=</span> fields<span class="token punctuation">.</span><span class="token function">iterator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-        while(fieldIterator.hasNext()) &#123;
-            Field field &#x3D; (Field)fieldIterator.next();
-            if (!field.isAccessible()) &#123;
-                field.setAccessible(true);
-            &#125;
+        <span class="token keyword">while</span><span class="token punctuation">(</span>fieldIterator<span class="token punctuation">.</span><span class="token function">hasNext</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Field</span> field <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">Field</span><span class="token punctuation">)</span>fieldIterator<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>field<span class="token punctuation">.</span><span class="token function">isAccessible</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                field<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
 
-            Object value &#x3D; field.get(target);
-            valueList.add(value);
-        &#125;
+            <span class="token class-name">Object</span> value <span class="token operator">=</span> field<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            valueList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
 
-        return valueList;
-    &#125;
+        <span class="token keyword">return</span> valueList<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
 
 
-    public static List&lt;Field&gt; getFields(Class&lt;?&gt; claszz, String[] fieldNames) &#123;
-        if (fieldNames !&#x3D; null &amp;&amp; fieldNames.length !&#x3D; 0) &#123;
-            List&lt;String&gt; needFieldList &#x3D; Arrays.asList(fieldNames);
-            List&lt;Field&gt; matchFieldList &#x3D; new ArrayList();
-            List&lt;Field&gt; fields &#x3D; getAllField(claszz);
-            Iterator fieldIterator &#x3D; fields.iterator();
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Field</span><span class="token punctuation">></span></span> <span class="token function">getFields</span><span class="token punctuation">(</span><span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> claszz<span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fieldNames<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fieldNames <span class="token operator">!=</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span> fieldNames<span class="token punctuation">.</span>length <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">></span></span> needFieldList <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">asList</span><span class="token punctuation">(</span>fieldNames<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Field</span><span class="token punctuation">></span></span> matchFieldList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Field</span><span class="token punctuation">></span></span> fields <span class="token operator">=</span> <span class="token function">getAllField</span><span class="token punctuation">(</span>claszz<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Iterator</span> fieldIterator <span class="token operator">=</span> fields<span class="token punctuation">.</span><span class="token function">iterator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-            while(fieldIterator.hasNext()) &#123;
-                Field field &#x3D; (Field)fieldIterator.next();
-                if (needFieldList.contains(field.getName())) &#123;
-                    matchFieldList.add(field);
-                &#125;
-            &#125;
+            <span class="token keyword">while</span><span class="token punctuation">(</span>fieldIterator<span class="token punctuation">.</span><span class="token function">hasNext</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token class-name">Field</span> field <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">Field</span><span class="token punctuation">)</span>fieldIterator<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>needFieldList<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>field<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                    matchFieldList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>field<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+            <span class="token punctuation">&#125;</span>
 
-            return matchFieldList;
-        &#125; else &#123;
-            return Collections.EMPTY_LIST;
-        &#125;
-    &#125;
+            <span class="token keyword">return</span> matchFieldList<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">return</span> <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token constant">EMPTY_LIST</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
 
-    public static List&lt;Field&gt; getAllField(Class&lt;?&gt; claszz) &#123;
-        if (claszz &#x3D;&#x3D; null) &#123;
-            return Collections.EMPTY_LIST;
-        &#125; else &#123;
-            List&lt;Field&gt; list &#x3D; new ArrayList();
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Field</span><span class="token punctuation">></span></span> <span class="token function">getAllField</span><span class="token punctuation">(</span><span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> claszz<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>claszz <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">return</span> <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token constant">EMPTY_LIST</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Field</span><span class="token punctuation">></span></span> list <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-            do &#123;
-                Field[] array &#x3D; claszz.getDeclaredFields();
-                list.addAll(Arrays.asList(array));
-                claszz &#x3D; claszz.getSuperclass();
-            &#125; while(claszz !&#x3D; null &amp;&amp; claszz !&#x3D; Object.class);
+            <span class="token keyword">do</span> <span class="token punctuation">&#123;</span>
+                <span class="token class-name">Field</span><span class="token punctuation">[</span><span class="token punctuation">]</span> array <span class="token operator">=</span> claszz<span class="token punctuation">.</span><span class="token function">getDeclaredFields</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                list<span class="token punctuation">.</span><span class="token function">addAll</span><span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">asList</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                claszz <span class="token operator">=</span> claszz<span class="token punctuation">.</span><span class="token function">getSuperclass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">while</span><span class="token punctuation">(</span>claszz <span class="token operator">!=</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span> claszz <span class="token operator">!=</span> <span class="token class-name">Object</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-            return list;
-        &#125;
-    &#125;
+            <span class="token keyword">return</span> list<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
 
-&#125;
+<span class="token punctuation">&#125;</span>
 </code></pre>
 <h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>把锁注解，直接添加到方法上，锁参数注解，添加到方法参数里面，来获取到值</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">/**
  * @author huangle
- * @date 2022&#x2F;12&#x2F;8 14:35
- *&#x2F;
-@RestController
-@RequestMapping(&quot;&#x2F;user&quot;)
-public class UserController &#123;
+ * @date 2022/12/8 14:35
+ */</span>
+<span class="token annotation punctuation">@RestController</span>
+<span class="token annotation punctuation">@RequestMapping</span><span class="token punctuation">(</span><span class="token string">"/user"</span><span class="token punctuation">)</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">UserController</span> <span class="token punctuation">&#123;</span>
 
 
-    @RedisLock(prefix &#x3D; &quot;user&quot;,lockTime &#x3D; 1,timeUnit &#x3D; TimeUnit.MINUTES)
-    @GetMapping(&quot;&#x2F;v1&#x2F;getUser&#x2F;&#123;userId&#125;&quot;)
-    public Map&lt;String,Object&gt; getUser(@PathVariable @LockField Long userId)&#123;
-        Map&lt;String,Object&gt; user &#x3D; new HashMap&lt;&gt;();
-        user.put(&quot;name&quot;,&quot;anoxia&quot;);
-        user.put(&quot;userId&quot;,userId);
-        return user;
-    &#125;
+    <span class="token annotation punctuation">@RedisLock</span><span class="token punctuation">(</span>prefix <span class="token operator">=</span> <span class="token string">"user"</span><span class="token punctuation">,</span>lockTime <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span>timeUnit <span class="token operator">=</span> <span class="token class-name">TimeUnit</span><span class="token punctuation">.</span><span class="token constant">MINUTES</span><span class="token punctuation">)</span>
+    <span class="token annotation punctuation">@GetMapping</span><span class="token punctuation">(</span><span class="token string">"/v1/getUser/&#123;userId&#125;"</span><span class="token punctuation">)</span>
+    <span class="token keyword">public</span> <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span><span class="token class-name">Object</span><span class="token punctuation">></span></span> <span class="token function">getUser</span><span class="token punctuation">(</span><span class="token annotation punctuation">@PathVariable</span> <span class="token annotation punctuation">@LockField</span> <span class="token class-name">Long</span> userId<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span><span class="token class-name">Object</span><span class="token punctuation">></span></span> user <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        user<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span><span class="token string">"name"</span><span class="token punctuation">,</span><span class="token string">"anoxia"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        user<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span><span class="token string">"userId"</span><span class="token punctuation">,</span>userId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> user<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
 
-&#125;</code></pre>
-
-      </section>
-
-      
-      
-        <nav class="article-nav">
-          
-            <div class="article-nav-item layout-padding">
-  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
-    
-    <div class="card-text">
-      
-        <a href="/2023/02/07/%E9%87%8D%E5%AD%A6Spring/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">重学Spring</h2>
-        </a>
-      
-      <div class="card-text--row">Newer</div>
-    </div>
-  </article>
-</div>
-          
-          
-            <div class="article-nav-item layout-padding">
-  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
-    
-    <div class="card-text">
-      
-        <a href="/2023/02/01/Hexo%E6%90%AD%E5%BB%BA&Github%E9%83%A8%E7%BD%B2/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">Hexo搭建&amp;Github部署</h2>
-        </a>
-      
-      <div class="card-text--row">Older</div>
-    </div>
-  </article>
-</div>
-          
-        </nav>
-      
-
-      <section class="page-message-container layout-padding">
-        
-
-
-  
-  
-    <div class="valine-container comments-container content-padding--primary soft-size--large soft-style--box">
-      <div id="valine_thread" class="valine-thread"></div>
-    </div>
-    <script type="text/javascript" src="//unpkg.com/leancloud-storage@3.15.0/dist/av-min.js"></script>
-    <script type="text/javascript" src='//unpkg.com/valine/dist/Valine.min.js'></script>
-    <script type="text/javascript">
-      new Valine({
-        el: "#valine_thread",
-        appId: "YS1lGcDvFgI78s1rqybq77A1-gzGzoHsz",
-        appKey: "LUdBbVQMmVn7Cqlrsk9H9FBf",
-        placeholder: "随便说点什么叭～",
-        avatar: "mp",
-        pageSize: 10,
-        lang: "zh-cn",
-        visitor: true,
-        recordIP: true,
-        enableQQ: false,
-        meta: ['nick', 'mail', 'link'],
-        requiredFields: ['nick'],
-        
-        // Bilibili 表情包插件
-        // 设置 Bilibili 表情包地址
-        emojiCDN: '//i0.hdslb.com/bfs/emote/', 
-        // 表情 title 和图片映射
-        emojiMaps: {
-            // 小黄脸
-            "2023": "fa6dda8b876ed38609de38aa604be5ad109b8591.png",
-            "足球": "f9157d9fa5ac3b8339cb8a8b7ad70eb40d4113c9.png",
-            "脱单doge": "bf7e00ecab02171f8461ee8cf439c73db9797748.png",
-            "微笑": "685612eadc33f6bc233776c6241813385844f182.png",
-            "口罩": "3ad2f66b151496d2a5fb0a8ea75f32265d778dd3.png",
-            "doge": "3087d273a78ccaff4bb1e9972e2ba2a7583c9f11.png",
-            "妙啊": "b4cb77159d58614a9b787b91b1cd22a81f383535.png",
-            "OK": "4683fd9ffc925fa6423110979d7dcac5eda297f4.png",
-            "星星眼": "63c9d1a31c0da745b61cdb35e0ecb28635675db2.png",
-            "辣眼睛": "35d62c496d1e4ea9e091243fa812866f5fecc101.png",
-            "吃瓜": "4191ce3c44c2b3df8fd97c33f85d3ab15f4f3c84.png",
-            "滑稽": "d15121545a99ac46774f1f4465b895fe2d1411c3.png",
-            "呲牙": "b5a5898491944a4268360f2e7a84623149672eb6.png",
-            "打call": "431432c43da3ee5aab5b0e4f8931953e649e9975.png",
-            "歪嘴": "4384050fbab0586259acdd170b510fe262f08a17.png",
-            "调皮": "8290b7308325e3179d2154327c85640af1528617.png",
-            "2022": "a783df2ce72952c44004007462324bde4b092a0c.png",
-            "虎年": "a062f5fa2bafe677e49b6963a2bbb11dd4fe1e11.png",
-            "豹富": "3d1dbe52ea16e12ff7b1c371196f728a4097fb33.png",
-            "嗑瓜子": "28a91da1685d90124cfeead74622e1ebb417c0eb.png",
-            "笑哭": "c3043ba94babf824dea03ce500d0e73763bf4f40.png",
-            "藏狐": "ba0937ef6f3ccca85e2e0047e6263f3b4da37201.png",
-            "脸红": "0922c375da40e6b69002bd89b858572f424dcfca.png",
-            "给心心": "1597302b98827463f5b75c7cac1f29ea6ce572c4.png",
-            "嘟嘟": "abd7404537d8162720ccbba9e0a8cdf75547e07a.png",
-            "哦呼": "362bded07ea5434886271d23fa25f5d85d8af06c.png",
-            "喜欢": "8a10a4d73a89f665feff3d46ca56e83dc68f9eb8.png",
-            "酸了": "92b1c8cbceea3ae0e8e32253ea414783e8ba7806.png",
-            "嫌弃": "de4c0783aaa60ec03de0a2b90858927bfad7154b.png",
-            "大哭": "2caafee2e5db4db72104650d87810cc2c123fc86.png",
-            "害羞": "9d2ec4e1fbd6cb1b4d12d2bbbdd124ccb83ddfda.png",
-            "疑惑": "b7840db4b1f9f4726b7cb23c0972720c1698d661.png",
-            "喜极而泣": "485a7e0c01c2d70707daae53bee4a9e2e31ef1ed.png",
-            "奸笑": "bb84906573472f0a84cebad1e9000eb6164a6f5a.png",
-            "笑": "81edf17314cea3b48674312b4364df44d5c01f17.png",
-            "偷笑": "6c49d226e76c42cd8002abc47b3112bc5a92f66a.png",
-            "惊讶": "f8e9a59cad52ae1a19622805696a35f0a0d853f3.png",
-            "捂脸": "6921bb43f0c634870b92f4a8ad41dada94a5296d.png",
-            "阴险": "ba8d5f8e7d136d59aab52c40fd3b8a43419eb03c.png",
-            "囧": "12e41d357a9807cc80ef1e1ed258127fcc791424.png",
-            "呆": "33ad6000d9f9f168a0976bc60937786f239e5d8c.png",
-            "抠鼻": "cb89184c97e3f6d50acfd7961c313ce50360d70f.png",
-            "大笑": "ca94ad1c7e6dac895eb5b33b7836b634c614d1c0.png",
-            "惊喜": "0afecaf3a3499479af946f29749e1a6c285b6f65.png",
-            "无语": "44667b7d9349957e903b1b62cb91fb9b13720f04.png",
-            "点赞": "1a67265993913f4c35d15a6028a30724e83e7d35.png",
-            "鼓掌": "895d1fc616b4b6c830cf96012880818c0e1de00d.png",
-            "尴尬": "cb321684ed5ce6eacdc2699092ab8fe7679e4fda.png",
-            "灵魂出窍": "43d3db7d97343c01b47e22cfabeca84b4251f35a.png",
-            "委屈": "d2f26cbdd6c96960320af03f5514c5b524990840.png",
-            "傲娇": "010540d0f61220a0db4922e4a679a1d8eca94f4e.png",
-            "疼": "905fd9a99ec316e353b9bd4ecd49a5f0a301eabf.png",
-            "冷": "cb0ebbd0668640f07ebfc0e03f7a18a8cd00b4ed.png",
-            "热": "4e58a2a6f5f1580ac33df2d2cf7ecad7d9ab3635.png",
-            "生病": "0f25ce04ae1d7baf98650986454c634f6612cb76.png",
-            "吓": "9c10c5ebc7bef27ec641b8a1877674e0c65fea5d.png",
-            "吐": "06946bfe71ac48a6078a0b662181bb5cad09decc.png",
-            "捂眼": "c5c6d6982e1e53e478daae554b239f2b227b172b.png",
-            "嘘声": "e64af664d20716e090f10411496998095f62f844.png",
-            "思考": "cfa9b7e89e4bfe04bbcd34ccb1b0df37f4fa905c.png",
-            "再见": "fc510306bae26c9aec7e287cdf201ded27b065b9.png",
-            "翻白眼": "eba54707c7168925b18f6f8b1f48d532fe08c2b1.png",
-            "哈欠": "888d877729cbec444ddbd1cf4c9af155a7a06086.png",
-            "奋斗": "bb2060c15dba7d3fd731c35079d1617f1afe3376.png",
-            "墨镜": "3a03aebfc06339d86a68c2d893303b46f4b85771.png",
-            "难过": "a651db36701610aa70a781fa98c07c9789b11543.png",
-            "撇嘴": "531863568e5668c5ac181d395508a0eeb1f0cda4.png",
-            "抓狂": "4c87afff88c22439c45b79e9d2035d21d5622eba.png",
-            "生气": "3195714219c4b582a4fb02033dd1519913d0246d.png",
-            "水稻": "d530fcaa5100ba12a17a79b55bad342d530c54e3.png",
-            "奶茶干杯": "d5a491990be551ce69f9660da948050df4eab331.png",
-            "汤圆": "93609633a9d194cf336687eb19c01dca95bde719.png",
-            "锦鲤": "643d6c19c8164ffd89e3e9cdf093cf5d773d979c.png",
-            "弹幕破百亿": "80891223ba023dff3141e377f4ea3b89918eb6a4.png",
-            "福到了": "5de5373d354c373cf1617b6b836f3a8d53c5a655.png",
-            "鸡腿": "c7860392815d345fa69c4f00ef18d67dccfbd574.png",
-            "雪花": "a41813c4edf8782047e172c884ebd4507ce5e449.png",
-            "视频卫星": "dce6fc7d6dfeafff01241924db60f8251cca5307.png",
-            "干杯": "8da12d5f55a2c7e9778dcc05b40571979fe208e6.png",
-            "黑洞": "e90ec4c799010f25391179118ccd9f66b3b279ba.png",
-            "爱心": "ed04066ea7124106d17ffcaf75600700e5442f5c.png",
-            "胜利": "b49fa9f4b1e7c3477918153b82c60b114d87347c.png",
-            "加油": "c7aaeacb21e107292d3bb053e5abde4a4459ed30.png",
-            "抱拳": "89516218158dbea18ab78e8873060bf95d33bbbe.png",
-            "响指": "1b5c53cf14336903e1d2ae3527ca380a1256a077.png",
-            "保佑": "fafe8d3de0dc139ebe995491d2dac458a865fb30.png",
-            "福": "802429a301ac5b35a0480d9526a070ce67cd8097.png",
-            "支持": "3c210366a5585706c09d4c686a9d942b39feeb50.png",
-            "拥抱": "41780a4254750cdaaccb20735730a36044e98ef3.png",
-            "跪了": "f2b3aee7e521de7799d4e3aa379b01be032698ac.png",
-            "怪我咯": "07cc6077f7f7d75b8d2c722dd9d9828a9fb9e46d.png",
-            "老鼠": "8e6fb491eb1bb0d5862e7ec8ccf9a3da12b6c155.png",
-            "牛年": "9275275ff1f2659310648221107d20bc4970f106.png",
-            "三星堆": "fc7dadaa6986e75b813aa26f3eff3281d5f1a6d1.png",
-            "洛天依": "9fe06f3594d9afaf4ee2b74770f1c3086ae0ba11.png",
-            "坎公骑冠剑_吃鸡": "c4248a7b6ab326d66c83fd1fb58f1a50f99df332.png",
-            "坎公骑冠剑_钻石": "0b97c7e50e0cc963370e62fbb9b55f51bbe7f8ab.png",
-            "坎公骑冠剑_无语": "80eba0ce64c3fc1279b4daede2f1979cb2380e78.png",
-            "来古-沉思": "4ee07ff03266d62b246be0b950bebb2abf3d997c.png",
-            "来古-呆滞": "9a70b365e523f2379f395031ceefcebb75a45903.png",
-            "来古-疑问": "032fdc0d9d9fe6334776f6c39518a959b73b98f4.png",
-            "来古-震撼": "8b40f228675602a317d32007de6b795c101135ec.png",
-            "来古-注意": "4b671ba32a2581cf40e5cd41c67b111eb8010de0.png",
-            "初音未来_大笑": "8e7f71cda83ce407b0684702983399f8ed982f17.png",
-            "原神_哇": "8188ddf95bace929d382c7a83214afde79d83bfc.png",
-            "原神_哼": "91ed33b74bc36873c3ac8b2648f70d7ab6d8ab78.png",
-            "原神_嗯": "8b0a87e414f453a29730b6e0f45ca61f2f898688.png",
-            "原神_欸嘿": "8fba438fcbe0550877b04efd768d857082307c5e.png",
-            "原神_喝茶": "1de5789fbb3526ef7823c54db7081790a38e7044.png",
-            "原神_生气": "90a38c34742899f8e84138ed55f56cad3ba611fb.png",
-            "保卫萝卜_白眼": "9fce63f38288700bf7be84f3be336cf895ba0902.png",
-            "保卫萝卜_笔芯": "5ff2ed5cb71b02010018cc5910ac7052a03769af.png",
-            "保卫萝卜_哭哭": "7d249f7c990111d3e2982f7477af15b7eb29cbd9.png",
-            "保卫萝卜_哇": "5f2370e561c32d841245f7b1aab2eef43aeb9544.png",
-            "保卫萝卜_问号": "41eb93f09fc4a4d0692a310e8a1f85ba60e96060.png",
-            "无悔华夏_不愧是你": "c58002c32ee78d45366e126f294cb3149dd64ac2.png",
-            "无悔华夏_吃瓜": "273dcff577551bafff4f1eae18561f871e73a6ba.png",
-            "无悔华夏_达咩": "cffab383f47bab7f6736ba9c8d6ac098113410d9.png",
-            "无悔华夏_点赞": "b0f2e8db405ec667c3e6aaabd7c15155b6ea8710.png",
-            "无悔华夏_好耶": "324cd79784aeb37dbf2f47f68bbe8ed5d01f975e.png",
-            "奥比岛_搬砖": "1fab697214918d91087373a999cc7ef8040ddf85.png",
-            "奥比岛_点赞": "fb0b476fe2ff30cd59385ea7d616627ac114161f.png",
-            "奥比岛_击爪": "35bba1bb8f164c5e844155548438248e6eaa8382.png",
-            "奥比岛_委屈": "fda155e7c33b40dbb94c24644e0635d47b6ef3cc.png",
-            "奥比岛_喜欢": "ed64e0c81ee194138bd9df30c65077ed978fb88c.png",
-            // tv_小电视
-            "tv_白眼": "c1d59f439e379ee50eef488bcb5e5378e5044ea4.png",
-            "tv_doge": "6ea59c827c414b4a2955fe79e0f6fd3dcd515e24.png",
-            "tv_坏笑": "1f0b87f731a671079842116e0991c91c2c88645a.png",
-            "tv_难过": "87f46748d3f142ebc6586ff58860d0e2fc8263ba.png",
-            "tv_生气": "26702dcafdab5e8225b43ffd23c94ac1ff932654.png",
-            "tv_委屈": "d04dba7b5465779e9755d2ab6f0a897b9b33bb77.png",
-            "tv_斜眼笑": "911f987aa8bc1bee12d52aafe62bc41ef4474e6c.png",
-            "tv_呆": "fe1179ebaa191569b0d31cecafe7a2cd1c951c9d.png",
-            "tv_发怒": "34ba3cd204d5b05fec70ce08fa9fa0dd612409ff.png",
-            "tv_惊吓": "0d15c7e2ee58e935adc6a7193ee042388adc22af.png",
-            "tv_呕吐": "9f996894a39e282ccf5e66856af49483f81870f3.png",
-            "tv_思考": "90cf159733e558137ed20aa04d09964436f618a1.png",
-            "tv_微笑": "70dc5c7b56f93eb61bddba11e28fb1d18fddcd4c.png",
-            "tv_疑问": "0793d949b18d7be716078349c202c15ff166f314.png",
-            "tv_大哭": "23269aeb35f99daee28dda129676f6e9ea87934f.png",
-            "tv_鼓掌": "1d21793f96ef4e6f48b23e53e3b9e42da833a0f6.png",
-            "tv_抠鼻": "c666f55e88d471e51bbd9fab9bb308110824a6eb.png",
-            "tv_亲亲": "a8111ad55953ef5e3be3327ef94eb4a39d535d06.png",
-            "tv_调皮": "b9c41de8e82dd7a8515ae5e3cb63e898bf245186.png",
-            "tv_笑哭": "1abc628f6d4f4caf9d0e7800878f4697abbc8273.png",
-            "tv_晕": "5443c22b4d07fb1907ccc610c8e6db254f2461b7.png",
-            "tv_点赞": "f85c354995bd99e28fc76c869bfe42ba6438eff4.png",
-            "tv_害羞": "a37683fb5642fa3ddfc7f4e5525fd13e42a2bdb1.png",
-            "tv_睡着": "8b196675b53af58264f383c50ad0945048290b33.png",
-            "tv_色": "61822c7e9aae5da76475e7892534545336b23a6f.png",
-            "tv_吐血": "09dd16a7aa59b77baa1155d47484409624470c77.png",
-            "tv_无奈": "ea8ed89ee9878f2fece2dda0ea8a5dbfe21b5751.png",
-            "tv_再见": "180129b8ea851044ce71caf55cc8ce44bd4a4fc8.png",
-            "tv_流汗": "cead1c351ab8d79e9f369605beb90148db0fbed3.png",
-            "tv_偷笑": "bb690d4107620f1c15cff29509db529a73aee261.png",
-            "tv_抓狂": "fe31c08edad661d63762b04e17b8d5ae3c71a757.png",
-            "tv_黑人问号": "45821a01f51bc867da9edbaa2e070410819a95b2.png",
-            "tv_困": "241ee304e44c0af029adceb294399391e4737ef2.png",
-            "tv_打脸": "56ab10b624063e966bfcb76ea5dc4794d87dfd47.png",
-            "tv_闭嘴": "c9e990da7f6e93975e25fd8b70e2e290aa4086ef.png",
-            "tv_鄙视": "6e72339f346a692a495b123174b49e4e8e781303.png",
-            "tv_腼腆": "89712c0d4af73e67f89e35cbc518420380a7f6f4.png",
-            "tv_馋": "fc7e829b845c43c623c8b490ee3602b7f0e76a31.png",
-            "tv_可爱": "9e55fd9b500ac4b96613539f1ce2f9499e314ed9.png",
-            "tv_发财": "34db290afd2963723c6eb3c4560667db7253a21a.png",
-            "tv_生病": "8b0ec90e6b86771092a498c54f09fc94621c1900.png",
-            "tv_流鼻血": "c32d39db2737f89b904ca32700d140a9241b0767.png",
-            "tv_尴尬": "7cfa62dafc59798a3d3fb262d421eeeff166cfa4.png",
-            "tv_大佬": "093c1e2c490161aca397afc45573c877cdead616.png",
-            "tv_流泪": "7e71cde7858f0cd50d74b0264aa26db612a8a167.png",
-            "tv_冷漠": "b9cbc755c2b3ee43be07ca13de84e5b699a3f101.png",
-            "tv_皱眉": "72ccad6679fea0d14cce648b4d818e09b8ffea2d.png",
-            "tv_鬼脸": "0ffbbddf8a94d124ca2f54b360bbc04feb6bbfea.png",
-            "tv_调侃": "4bc022533ef31544ca0d72c12c808cf4a1cce3e3.png",
-            "tv_目瞪口呆": "0b8cb81a68de5d5365212c99375e7ace3e7891b7.png",
-            // ... 更多表情
-        }
-        
-      });
-    </script>
-  
-
-  
-  
-
-
-      </section>
-    </div>
-    <div class="widget-info">
-      <section class="widget-author widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
-  <div class="widget-body">
-    
-      <img src="https://s.gravatar.com/avatar/2d6b803eea37de0257620d5fabee7e64?s=200&amp;r=g&amp;d=retro" class="soft-size--round soft-style--box" alt="huangle">
-    
-    
-      <h2>huangle</h2>
-    
-    
-      <p>贵在坚持</p>
-    
-
-    <div class="count-box">
-      <div class="count-box--item">
-        <svg class="icon icon-article" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M240.51564747 647.74217627h196.07203239c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806V165.10332731c0-33.18142087-30.16492806-60.32985613-60.32985612-60.32985611H245.04038668C225.43318342 104.7734712 210.35071939 119.85593522 210.35071939 139.46313845V617.57724821c0 16.59071043 13.57421762 30.16492806 30.16492808 30.16492806z m663.62841731-452.47392089v482.63884894c0 33.18142087-27.14843525 60.32985613-60.32985612 60.32985613H180.18579134c-33.18142087 0-60.32985613-27.14843525-60.32985612-60.32985613V195.26825538c-49.77213131 0-90.49478418 40.72265287-90.49478417 90.49478417v452.4739209c0 49.77213131 40.72265287 90.49478418 90.49478417 90.49478417h286.56681657c16.59071043 0 30.16492806 13.57421762 30.16492807 30.16492807s13.57421762 30.16492806 30.16492805 30.16492806h90.49478418c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806s13.57421762-30.16492806 30.16492807-30.16492807h286.56681657c49.77213131 0 90.49478418-40.72265287 90.49478417-90.49478417V285.76303955c0-49.77213131-40.72265287-90.49478418-90.49478417-90.49478417zM587.41232014 647.74217627h191.54729318c19.60720323 0 34.68966726-15.08246403 34.68966729-34.68966727V134.93839925c0-16.59071043-13.57421762-30.16492806-30.16492808-30.16492805H617.57724821c-30.16492806 0-60.32985613 27.14843525-60.32985612 60.32985611v452.4739209c0 16.59071043 13.57421762 30.16492806 30.16492805 30.16492806z" fill="currentColor"></path>
-</svg>
-        <span>4</span>
-      </div>
-      <div class="count-box--item">
-        <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
-</svg>
-        0
-      </div>
-      <div class="count-box--item">
-        <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
-</svg>
-        0
-      </div>
-    </div>
-  </div>
-</section>
-
-      
-
-      
-<section class="widet-notice widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
-  <div class="widget-title">
-    <svg class="icon icon-notice" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M512 945.02305225v28.15620663a24.27259221 24.27259221 0 0 1-24.27259221 24.27259335H394.0352a48.54518557 48.54518557 0 0 1-41.74885888-23.78714112l-110.68302222-184.47170332a132.04290333 132.04290333 0 0 1-17.47626667-48.54518557h118.4502511a200.97706667 200.97706667 0 0 1 76.21594113 14.56355556l20.38897777 133.49925888a48.54518557 48.54518557 0 0 0 36.40888888 27.67075555l16.01991111 2.91271112a24.27259221 24.27259221 0 0 1 20.38897778 25.72894889zM997.45185223 463.45481443a194.18074112 194.18074112 0 0 1-38.8361489 116.50844445 24.75804445 24.75804445 0 0 1-36.4088889 0l-34.95253333-34.95253333a24.27259221 24.27259221 0 0 1-2.91271111-30.58346667 97.09036999 97.09036999 0 0 0 0-106.79940665 24.27259221 24.27259221 0 0 1 2.91271111-30.58346666l34.95253333-34.95253334a24.75804445 24.75804445 0 0 1 18.93262223-7.28177777 26.2144 26.2144 0 0 1 17.47626667 9.70903665A194.18074112 194.18074112 0 0 1 997.45185223 463.45481443z m-194.18074112-388.36148111v776.72296335a48.54518557 48.54518557 0 0 1-48.54518556 48.54518443h-28.64165888a48.54518557 48.54518557 0 0 1-33.98163001-14.07810332l-145.63555556-143.20829668A291.27111111 291.27111111 0 0 0 342.57730333 657.63555556H172.18370333a145.63555556 145.63555556 0 0 1-145.63555556-145.63555556v-97.09036999a145.63555556 145.63555556 0 0 1 145.63555556-145.63555556h170.3936a291.27111111 291.27111111 0 0 0 206.31703779-85.43952668l145.63555555-143.20829554a48.54518557 48.54518557 0 0 1 33.98162888-14.07810446H754.72592555a48.54518557 48.54518557 0 0 1 48.54518556 48.54518555z" fill="currentColor"></path>
-</svg>
-    <span>NOTICE</span>
-  </div>
-  <div class="widget-body">
-    <p>好好搬砖、认真生活</p>
-  </div>
-</section>
-
-
-      <section class="widget-categorys widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
-  <div class="widget-title">
-    <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
-</svg>
-    <span>CATEGORYS</span>
-  </div>
-  <div class="widget-body">
-    <ul class="categorys-list">
-      
-    </ul>
-  </div>
-</section>
-
-      <section class="widget-tags widget-item  layout-margin content-padding--primary soft-size--large soft-style--box">
-  <div class="widget-title">
-    <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
-</svg>
-    <span>TAGS</span>
-  </div>
-  <div class="widget-body">
-    <div class="tags-cloud">
-      
-    </div>
-  </div>
-</section>
-    </div>
-  </article>
-</div>
-
-    <!-- footer container -->
-<footer id="footer" class="footer">
-  <div class="footer-container">
-    
-    <div class="social-icons">
-      
-        
-      
-        
-      
-        
-      
-        
-          <a href="https://github.com/miiiku/" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
-            <svg class="icon icon-github" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M64.6 512c0 195.6 125.4 361.9 300.1 422.9 23.5 5.9 19.9-10.8 19.9-22.2v-77.6c-135.8 15.9-141.3-74-150.5-89-18.5-31.5-61.9-39.5-49-54.5 31-15.9 62.5 4 98.9 58 26.4 39.1 77.9 32.5 104.1 26 5.7-23.5 17.9-44.5 34.7-60.9-140.7-25.2-199.4-111.1-199.4-213.3 0-49.5 16.4-95.1 48.4-131.8-20.4-60.6 1.9-112.4 4.9-120.1 58.2-5.2 118.5 41.6 123.3 45.3 33.1-8.9 70.8-13.7 112.9-13.7 42.4 0 80.3 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.4-43.9 2.9 7.7 24.7 58.3 5.5 118.1 32.5 36.8 49 82.8 49 132.4 0 102.3-59 188.3-200.2 213.2 23.5 23.3 38.1 55.5 38.1 91.1v112.7c0.8 9 0 17.9 15.1 17.9C832.7 877 960.4 709.4 960.4 512.1c0-247.5-200.6-447.9-447.9-447.9C265 64.1 64.6 264.5 64.6 512z"></path>
-</svg>
-          </a>
-        
-      
-        
-          <a href="https://twitter.com/guanquanhong" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
-            <svg class="icon icon-twitter" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-  <path d="M962.285714 233.142857q-38.285714 56-92.571429 95.428571 0.571429 8 0.571429 24 0 74.285714-21.714286 148.285714t-66 142-105.428571 120.285714-147.428571 83.428571-184.571429 31.142857q-154.857143 0-283.428571-82.857143 20 2.285714 44.571429 2.285714 128.571429 0 229.142857-78.857143-60-1.142857-107.428571-36.857143t-65.142857-91.142857q18.857143 2.857143 34.857143 2.857143 24.571429 0 48.571429-6.285714-64-13.142857-106-63.714286t-42-117.428571l0-2.285714q38.857143 21.714286 83.428571 23.428571-37.714286-25.142857-60-65.714286t-22.285714-88q0-50.285714 25.142857-93.142857 69.142857 85.142857 168.285714 136.285714t212.285714 56.857143q-4.571429-21.714286-4.571429-42.285714 0-76.571429 54-130.571429t130.571429-54q80 0 134.857143 58.285714 62.285714-12 117.142857-44.571429-21.142857 65.714286-81.142857 101.714286 53.142857-5.714286 106.285714-28.571429z"></path>
-</svg>
-          </a>
-        
-      
-    </div>
-     
-    <p>&copy; 2023 <a href="/" target="_blank">huangle</a></p>
-
-    
-
-    <p>Powered by <a href="https://hexo.io" target="_blank" rel="noopener noreferrer">Hexo</a> Theme - <a href="https://github.com/miiiku/flex-block" target="_blank" rel="noopener noreferrer author">flex-block</a></p>
-
-    <p>
-      <a href="javascript:;" id="theme-light">🌞 浅色</a>
-      <a href="javascript:;" id="theme-dark">🌛 深色</a>
-      <a href="javascript:;" id="theme-auto">🤖️ 自动</a>
-    </p>
-  </div>
-</footer>
-  </div>
-
-  <div class="back-to-top-fixed soft-size--round soft-style--box">
-    <svg class="icon icon-back-to-top" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <path d="M725.333333 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8l-213.333333-213.333333c-17.066667-17.066667-17.066667-42.666667 0-59.733333s42.666667-17.066667 59.733333 0l213.333333 213.333333c17.066667 17.066667 17.066667 42.666667 0 59.733333C746.666667 422.4 738.133333 426.666667 725.333333 426.666667z"></path>
-      <path d="M298.666667 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8-17.066667-17.066667-17.066667-42.666667 0-59.733333l213.333333-213.333333c17.066667-17.066667 42.666667-17.066667 59.733333 0s17.066667 42.666667 0 59.733333l-213.333333 213.333333C320 422.4 311.466667 426.666667 298.666667 426.666667z"></path>
-      <path d="M512 896c-25.6 0-42.666667-17.066667-42.666667-42.666667L469.333333 170.666667c0-25.6 17.066667-42.666667 42.666667-42.666667s42.666667 17.066667 42.666667 42.666667l0 682.666667C554.666667 878.933333 537.6 896 512 896z"></path>
-    </svg>
-  </div>
-
-  
-  <!-- aplayer -->
-
-
-<!-- dplayer -->
-
-
-
-
-  
-
-
-  
-
-
-  
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-  
-  <!-- 尾部用户自定义相关内容 -->
-</body>
-</html>
+<span class="token punctuation">&#125;</span></code></pre>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><span class="icon iconify" data-icon="ri:hand-coin-line"></span></span><div id="reward-comment">I'm so cute. Please give me money.</div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>huangle</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="https://anoxia77.github.io/2023/02/01/Redis%20%E9%94%81-%E6%B3%A8%E8%A7%A3%E5%B0%81%E8%A3%85/" title="Redis锁-注解封装">https://anoxia77.github.io/2023/02/01/Redis%20%E9%94%81-%E6%B3%A8%E8%A7%A3%E5%B0%81%E8%A3%85/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/2023/02/07/%E9%87%8D%E5%AD%A6Spring/" rel="prev" title="重学Spring"><span class="icon iconify" data-icon="ri:arrow-left-s-line"></span><span class="post-nav-text">重学Spring</span></a></div><div class="post-nav-item"><a class="post-nav-next" href="/2023/02/01/Hexo%E6%90%AD%E5%BB%BA&amp;Github%E9%83%A8%E7%BD%B2/" rel="next" title="Hexo搭建&amp;Github部署"><span class="post-nav-text">Hexo搭建&amp;Github部署</span><span class="icon iconify" data-icon="ri:arrow-right-s-line"></span></a></div></div></div><div class="hty-card" id="comment"></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2019 – 2023 </span><span class="with-love" id="animate"><span class="icon iconify" data-icon="ri:cloud-line"></span></span><span class="author"> huangle</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.3.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.10.9</span></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></body></html>
