@@ -28,7 +28,7 @@
 
   
 
-  <title>Redis锁-注解封装 | Anoxia小屋</title>
+  <title>重学Spring | Anoxia小屋</title>
 
   
 
@@ -101,11 +101,11 @@
     <div class="header-content">
       <div class="post-text layout-block">
         <div class="layout-margin">
-          <h1 class="title-wrap">Redis锁-注解封装</h1>
+          <h1 class="title-wrap">重学Spring</h1>
           <h2 class="title-sub-wrap">
             <strong>huangle</strong>
             <span>发布于</span>
-            <time  class="article-date" datetime="2023-02-01T09:30:54.557Z" itemprop="datePublished">2023-02-01</time>
+            <time  class="article-date" datetime="2023-02-07T08:58:34.686Z" itemprop="datePublished">2023-02-07</time>
           </h2>
           
           
@@ -136,268 +136,10 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>简单封装redis的锁，在使用上提升体验度，对于一些简单的业务，可以直接使用注解封装锁，来控制并发。</p>
-<h3 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h3><p>一般来说，使用redis分布式锁，就是对一个key进行setnx，或者检查key是否已经存在，如果存在表示已经加锁。<br>所以我们首先梳理一下 key 的结构，key 通常都是 使用 <code>业务描述</code> + <code>唯一业务字段</code> 来唯一性确定一个key，例如这样 key &#x3D; <code>redisLock:orderShop:1000000001</code><br>把key 简单的分为三段</p>
-<ul>
-<li>reidsLock 表示这是一个锁，</li>
-<li>orderShop 表示业务场景，</li>
-<li>100000001 表示具体的某个订单。</li>
-</ul>
-<p>对于系统来说 第一个一般是相同的，因为设计可以方便后面找这个key。所以我们主要需要关注的就是后面两个值，业务场景一般对于一种场景来说都是一样是。所以这个我们可以通过一个值传进去。后面的具体业务字段就不一定了，在同一个业务中，可以需要不同的业务字段来做为锁，所以这里需要在进行变化一下。需要允许多个 业务字段来做为锁。<br>一般来说，我们锁的都是方法，或者说是方法里面的某一些执行逻辑，对于没有事务的业务来说，我们可以通过这种方法简单的控制。（如果有事务的话，可能就要考虑锁粒度的问题，因为大锁可能会导致事务过长）</p>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>前面我们提到，锁的话主要都是作用在方法层面的，所以我们可以给方法加一个注解。对于业务参数来说，他就是方法的参数，那么我们可以考虑给方法参数也加一个注解来注入值。<br>使用的Maven包</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&lt;dependency&gt;
-      &lt;groupId&gt;org.springframework&lt;&#x2F;groupId&gt;
-      &lt;artifactId&gt;spring-aspects&lt;&#x2F;artifactId&gt;
-&lt;&#x2F;dependency&gt;
-&lt;dependency&gt;
-      &lt;groupId&gt;org.redisson&lt;&#x2F;groupId&gt;
-      &lt;artifactId&gt;redisson-spring-boot-starter&lt;&#x2F;artifactId&gt;
-      &lt;version&gt;3.17.7&lt;&#x2F;version&gt;
-&lt;&#x2F;dependency&gt;</code></pre>
-<h4 id="方法注解"><a href="#方法注解" class="headerlink" title="方法注解"></a>方法注解</h4><p>注解主要的参数就是一些常用的参数，可以根据自己的需要加添加或删除</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">
-&#x2F;**
- * redis 锁注解
- * @author huangle
- *&#x2F;
-@Target(ElementType.METHOD)
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RedisLock &#123;
-
-    &#x2F;**
-     * 锁前缀
-     *&#x2F;
-    String prefix() default &quot;redis:Lock&quot;;
-
-    &#x2F;**
-     * 加锁时间
-     *&#x2F;
-    long lockTime() default 30;
-
-    boolean tryLock() default true;
-
-    &#x2F;**
-     * 加锁不成功的等待时间 -1 不等待
-     *&#x2F;
-    long waitTime() default -1;
-
-    &#x2F;**
-     * 锁时间类型
-     *&#x2F;
-    TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
-
-
-
-&#125;
-</code></pre>
-<h4 id="字段注解"><a href="#字段注解" class="headerlink" title="字段注解"></a>字段注解</h4><p>这个注解主要的作用就是帮助我们注入可变的业务参数，我们直接添加到方法参数上面，来获取到他的值</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
- * 锁字段注解
- * 用于生成 key
- * @author huangle
- *&#x2F;
-@Target(ElementType.PARAMETER)
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface LockField &#123;
-
-    &#x2F;**
-     * 锁标识字段，没有则取当前参数值，有则按顺序反射取参数对象字段值
-     * @return
-     *&#x2F;
-    String[] values() default &#123;&#125;;
-
-&#125;
-</code></pre>
-<h4 id="注解切面"><a href="#注解切面" class="headerlink" title="注解切面"></a>注解切面</h4><p>注解切面，使用aop的思想，来对注解进行拦截，然后加锁，使用的是 redssion 来进行的加锁操作</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
- * @author huangle
- * @date 2022&#x2F;12&#x2F;8 9:54
- *&#x2F;
-@Slf4j
-@Aspect
-@Component
-public class RedisLockAspect &#123;
-
-    @Resource
-    private RedissonClient redissonClient;
-
-    &#x2F;**
-     * key 格式 REDIS_LOCK_PREFIX + SEPARATOR + prefix + SEPARATOR + field&#x2F;fieldName
-     *&#x2F;
-    private static final String REDIS_LOCK_PREFIX &#x3D; &quot;anoxiaLock&quot;;
-
-    private static final String SEPARATOR &#x3D; &quot;:&quot;;
-
-    @Pointcut(&quot;@annotation(cn.anoxia.redis.common.annotation.RedisLock)&quot;)
-    public void doAspect() &#123;
-    &#125;
-
-
-    @Around(&quot;doAspect()&quot;)
-    public Object doLockAround(ProceedingJoinPoint point) throws Throwable &#123;
-        &#x2F;&#x2F; 获取方法
-        MethodSignature methodSignature &#x3D; (MethodSignature) point.getSignature();
-        Method method &#x3D; methodSignature.getMethod();
-        &#x2F;&#x2F; 获取注解
-        RedisLock redisLock &#x3D; method.getAnnotation(RedisLock.class);
-        &#x2F;&#x2F; 获取前缀
-        String prefix &#x3D; redisLock.prefix();
-        &#x2F;&#x2F; 获取字段
-        Parameter[] parameters &#x3D; method.getParameters();
-        &#x2F;&#x2F; 构建key
-        StringBuilder lockKeyStr &#x3D; new StringBuilder(prefix);
-        Object[] args &#x3D; point.getArgs();
-        int index &#x3D; -1;
-        LockField lockField;
-        &#x2F;&#x2F; 遍历所有字段
-        for (Parameter parameter : parameters) &#123;
-            Object arg &#x3D; args[++index];
-            &#x2F;&#x2F; 获取注解
-            lockField &#x3D; parameter.getAnnotation(LockField.class);
-            if (lockField &#x3D;&#x3D; null) &#123;
-                continue;
-            &#125;
-            String[] values &#x3D; lockField.values();
-            if (values &#x3D;&#x3D; null || values.length &#x3D;&#x3D; 0) &#123;
-                lockKeyStr.append(SEPARATOR).append(arg);
-            &#125; else &#123;
-                List&lt;Object&gt; filedValues &#x3D; ReflectionUtil.getFiledValues(parameter.getType(), arg, values);
-                for (Object filedValue : filedValues) &#123;
-                    lockKeyStr.append(SEPARATOR).append(filedValue);
-                &#125;
-            &#125;
-        &#125;
-        &#x2F;&#x2F; 获取锁
-        String key &#x3D; REDIS_LOCK_PREFIX + SEPARATOR + lockKeyStr.toString();
-        RLock lock &#x3D; redissonClient.getLock(key);
-        &#x2F;&#x2F; 加锁成功标志位，用于释放锁
-        boolean lockFlag &#x3D; false;
-        &#x2F;&#x2F; 尝试加锁
-        try &#123;
-            long lockTime &#x3D; redisLock.lockTime();
-            TimeUnit timeUnit &#x3D; redisLock.timeUnit();
-            long waitTime &#x3D; redisLock.waitTime();
-            boolean tryLock &#x3D; redisLock.tryLock();
-            try &#123;
-                if (tryLock) &#123;
-                    if (waitTime &gt; 0) &#123;
-                        &#x2F;&#x2F; 尝试加锁，没有成功就等待，waitTime 等待时间，如果超时就直接放弃
-                        lockFlag &#x3D; lock.tryLock(waitTime, lockTime, timeUnit);
-                    &#125; else &#123;
-                        &#x2F;&#x2F; 直接不等待，如果加锁失败就返回
-                        lockFlag &#x3D; lock.tryLock(-1,lockTime,timeUnit);
-                    &#125;
-                &#125; else &#123;
-                    lock.lock(lockTime, timeUnit);
-                    lockFlag &#x3D; true;
-                &#125;
-            &#125; catch (Exception e) &#123;
-                log.error(&quot;加锁失败！，错误信息：&#123;&#125;&quot;, e);
-                throw new RuntimeException(&quot;加锁失败！&quot;);
-            &#125;
-            if (!lockFlag)&#123;
-                throw new RuntimeException(&quot;加锁失败！&quot;);
-            &#125;
-            &#x2F;&#x2F; 加锁结束
-            &#x2F;&#x2F; 保证业务逻辑已经完成，在释放锁
-            Object proceed &#x3D; point.proceed();
-            return proceed;
-        &#125; finally &#123;
-            if (lockFlag) &#123;
-                log.info(&quot;释放锁,key:&#123;&#125;&quot;, key);
-                lock.unlock();
-            &#125;
-        &#125;
-    &#125;
-
-&#125;
-</code></pre>
-<p>使用的到的工具类，这个可以使用其他的也可以，只要可以实现就行</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
- * @author huangle
- * @date 2022&#x2F;12&#x2F;8 10:26
- *&#x2F;
-public class ReflectionUtil &#123;
-
-    public static List&lt;Object&gt; getFiledValues(Class&lt;?&gt; type, Object target, String[] fieldNames) throws IllegalAccessException &#123;
-        List&lt;Field&gt; fields &#x3D; getFields(type, fieldNames);
-        List&lt;Object&gt; valueList &#x3D; new ArrayList();
-        Iterator fieldIterator &#x3D; fields.iterator();
-
-        while(fieldIterator.hasNext()) &#123;
-            Field field &#x3D; (Field)fieldIterator.next();
-            if (!field.isAccessible()) &#123;
-                field.setAccessible(true);
-            &#125;
-
-            Object value &#x3D; field.get(target);
-            valueList.add(value);
-        &#125;
-
-        return valueList;
-    &#125;
-
-
-    public static List&lt;Field&gt; getFields(Class&lt;?&gt; claszz, String[] fieldNames) &#123;
-        if (fieldNames !&#x3D; null &amp;&amp; fieldNames.length !&#x3D; 0) &#123;
-            List&lt;String&gt; needFieldList &#x3D; Arrays.asList(fieldNames);
-            List&lt;Field&gt; matchFieldList &#x3D; new ArrayList();
-            List&lt;Field&gt; fields &#x3D; getAllField(claszz);
-            Iterator fieldIterator &#x3D; fields.iterator();
-
-            while(fieldIterator.hasNext()) &#123;
-                Field field &#x3D; (Field)fieldIterator.next();
-                if (needFieldList.contains(field.getName())) &#123;
-                    matchFieldList.add(field);
-                &#125;
-            &#125;
-
-            return matchFieldList;
-        &#125; else &#123;
-            return Collections.EMPTY_LIST;
-        &#125;
-    &#125;
-
-    public static List&lt;Field&gt; getAllField(Class&lt;?&gt; claszz) &#123;
-        if (claszz &#x3D;&#x3D; null) &#123;
-            return Collections.EMPTY_LIST;
-        &#125; else &#123;
-            List&lt;Field&gt; list &#x3D; new ArrayList();
-
-            do &#123;
-                Field[] array &#x3D; claszz.getDeclaredFields();
-                list.addAll(Arrays.asList(array));
-                claszz &#x3D; claszz.getSuperclass();
-            &#125; while(claszz !&#x3D; null &amp;&amp; claszz !&#x3D; Object.class);
-
-            return list;
-        &#125;
-    &#125;
-
-&#125;
-</code></pre>
-<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>把锁注解，直接添加到方法上，锁参数注解，添加到方法参数里面，来获取到值</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java">&#x2F;**
- * @author huangle
- * @date 2022&#x2F;12&#x2F;8 14:35
- *&#x2F;
-@RestController
-@RequestMapping(&quot;&#x2F;user&quot;)
-public class UserController &#123;
-
-
-    @RedisLock(prefix &#x3D; &quot;user&quot;,lockTime &#x3D; 1,timeUnit &#x3D; TimeUnit.MINUTES)
-    @GetMapping(&quot;&#x2F;v1&#x2F;getUser&#x2F;&#123;userId&#125;&quot;)
-    public Map&lt;String,Object&gt; getUser(@PathVariable @LockField Long userId)&#123;
-        Map&lt;String,Object&gt; user &#x3D; new HashMap&lt;&gt;();
-        user.put(&quot;name&quot;,&quot;anoxia&quot;);
-        user.put(&quot;userId&quot;,userId);
-        return user;
-    &#125;
-
-&#125;</code></pre>
+        <p><img src="https://s3.bmp.ovh/imgs/2023/02/07/9a1d1648ec5b65b1.jpg#id=pHeEJ&originHeight=1440&originWidth=2560&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从上一次学完spring到现在已经1年多了，学完之后感觉自己提升了不少，对项目中一些spring的用法也清晰了些。<br />第一次学习过于匆忙，没有记录，没有复盘，就是一路走马观花是的跟着敲完了代码，虽然学完之后自己对spring有了简单的认识，但是在实际开发过程中用起来还是磕磕绊绊。<br />这一次，重新去跟着学一遍spring，这一次，一步一记录，可能对于以前啥都不会来说，能更好的去组织自己所学到的知识。<br />下面是我目前能记起的spring提供的一些东西<br /><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/2869098/1675318460071-b4de6a74-1e3f-4d4e-9436-4c88309065eb.jpeg"><br />第一次学完spring后，我对spring的认识就是 <code>spring 只是一个工厂，帮助我们管理 Bean（对象）的创建与销毁</code>，这其实也是 <code>IOC</code>控制反转，提供的功能。<br />spring 接管了以前由 人手动 new 一个对象的过程，通过一个工厂统一来管理项目中所有的 Bean。<br />所以 spring 的核心，应该是围绕这 对象的创建进行的。</p>
+<h4 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/2869098/1675321986350-2946785c-2c8b-4f2c-8899-1fd3efebcdda.jpeg"></p>
+<h4 id="对象的创建过程"><a href="#对象的创建过程" class="headerlink" title="对象的创建过程"></a>对象的创建过程</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/2869098/1675322171166-392ad12a-1c2f-41aa-92f5-c57ff7ca51ef.jpeg"></p>
 
       </section>
 
@@ -405,28 +147,14 @@ public class UserController &#123;
       
         <nav class="article-nav">
           
-            <div class="article-nav-item layout-padding">
-  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
-    
-    <div class="card-text">
-      
-        <a href="/2023/02/07/%E9%87%8D%E5%AD%A6Spring/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">重学Spring</h2>
-        </a>
-      
-      <div class="card-text--row">Newer</div>
-    </div>
-  </article>
-</div>
-          
           
             <div class="article-nav-item layout-padding">
   <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
     
     <div class="card-text">
       
-        <a href="/2023/02/01/Hexo%E6%90%AD%E5%BB%BA&Github%E9%83%A8%E7%BD%B2/" itemprop="url">
-          <h2 class="card-text--title text-ellipsis">Hexo搭建&amp;Github部署</h2>
+        <a href="/2023/02/01/Redis%20%E9%94%81-%E6%B3%A8%E8%A7%A3%E5%B0%81%E8%A3%85/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">Redis锁-注解封装</h2>
         </a>
       
       <div class="card-text--row">Older</div>
