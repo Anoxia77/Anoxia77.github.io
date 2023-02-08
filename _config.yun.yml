@@ -1,3 +1,41 @@
+banner:
+  enable: true
+  title: 阿乐的小站
+  border: true
+  cloud:
+    enable: true
+    color: white
+  go_down:
+    enable: true
+    icon: ri:arrow-down-s-line
+
+# 公告配置
+notice:
+  enable: true
+  content: Thanks for playing my game.
+
+# 相册
+albums:
+  enable: true
+
+
+# 点击图片放大功能
+medium_zoom: true
+
+# 头像配置
+#avatar:
+#  enable: true
+#  url: 
+#  rounded: true
+#  opacity: 1
+#  mickey_mouse: false
+#  status:
+#    enable: true
+#    emoji: 😭
+#    message: 不想上学
+
+
+
 # 代码复制按钮
 codeblock:
    copy_btn: true
@@ -5,3 +43,32 @@ codeblock:
 prismjs:
    light: prism-dark
    dark: prism-funky
+   
+tags:
+  Vue: '#4fc08d'
+  Hexo: '#0E834D'
+  Java: '#5298d1'
+  Node.js: '#026E00'
+  Git: '#F14E32'
+  React: '#61dafb'
+  Python: '#3776ab'
+  PHP: '#8892BF'
+  VS Code: '#0066B8'
+  JavaScript: '#F4DF4F'
+  TypeScript: '#317AC6'
+  Laravel: '#F4645F'
+ 
+# 文章分类定义颜色
+categories:
+  笔记: dimgray
+
+# 表情配置
+head:
+  js:
+    async:
+      # 这里是你从 iconfont 处获得的图标链接。
+      iconfont: https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css
+      
+      
+ 
+
