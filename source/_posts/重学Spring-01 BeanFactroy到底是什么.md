@@ -1,5 +1,5 @@
 ---
-title: 01 创建简单的Bean容器
+title: 重学Spring-01 BeanFactory到底是什么
 ---
 spring 作为管理bean 的创建与使用，从表面意思来说，可以把spring简单的认为是一个容器，就跟ArrayList、HashMap 一样的容器。<br />在项目中，我们一般会通过 `@Autowired`和 `@Resource`来引用spring中的bean
 
@@ -67,4 +67,4 @@ public class BeanFactoryTest {
 
 }
 ```
-测试结果<br />![image.png](https://cdn.nlark.com/yuque/0/2023/png/2869098/1675670533325-edacebdc-c71e-4b10-8cbb-463ca882e387.png#averageHue=%232c313a&clientId=u37b020b2-3922-4&from=paste&height=121&id=u13130bc4&name=image.png&originHeight=121&originWidth=739&originalType=binary&ratio=1&rotation=0&showTitle=false&size=12107&status=done&style=none&taskId=u05d12456-da47-47f8-a221-14c8fa5f113&title=&width=739)
+测试结果<br />![](https://s3.bmp.ovh/imgs/2023/02/08/1cf6b024e6fa65ee.png)
