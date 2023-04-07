@@ -43,6 +43,9 @@ codeblock:
 prismjs:
    light: prism-dark
    dark: prism-funky
+# tag 词云
+wordcloud:
+   enable: true
    
 tags:
   Vue: '#4fc08d'
