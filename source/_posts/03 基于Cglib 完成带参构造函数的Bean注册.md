@@ -1,4 +1,11 @@
+---
+title: 基于Cglib完成Bean的创建
+---
+
+
+
 ## 前言
+
 Spring 提供了多种方式去完成一个 bean 的初始化。前面我们已经实现了通过 `Class.newInstance()`方法来创建一个bean，但是这种方式只能创建无参构造的bean，但是实际项目中，一般的bean都是带参数的，所以我们要实现一个根据带参构造来创建bean的方法。这个时候我们就需要选择一种新的方式来实现 bean 的创建。在上一节有提到 通过 cglib 的方式来创建bean。
 ![image.png](https://cdn.nlark.com/yuque/0/2023/png/2869098/1675757601167-c432c664-8a09-4607-b054-feda3e153447.png#averageHue=%2395fa33&clientId=u635e9ef9-17cd-4&from=paste&height=317&id=udc7c3177&name=image.png&originHeight=317&originWidth=718&originalType=binary&ratio=1&rotation=0&showTitle=false&size=21841&status=done&style=none&taskId=u5ea93ff3-e399-4419-8755-345e2bbaf7a&title=&width=718)
 ## 实现

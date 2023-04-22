@@ -1,4 +1,11 @@
+---
+title: 实现Aware接口，提供获取Spring容器信息的能力
+---
+
+
+
 ### 前言
+
 spring 对bean的创建过程做了很完整的封装。但是提供了非常多的扩展接口，供我们使用。这一节主要是实现spring提供的获取 beanFactory，classLoader  等属性的能力。
 在我们开发过程中我们经常会使用到 `ApplicationContextAware`接口，来获取到 spring的上下文。来完成对bean的获取，当拿到了`BeanFactory`以后，我们能做的东西就多起来了，我们可以通过的spring工厂获取到我们需要的类，等等。
 ![](https://s3.bmp.ovh/imgs/2023/03/09/cf2b383e1c737084.png#id=UPX80&originHeight=226&originWidth=849&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=)

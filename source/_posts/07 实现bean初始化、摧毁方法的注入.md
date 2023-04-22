@@ -1,5 +1,11 @@
-## 实现 bean 初始化、摧毁方法的配置与处理
+---
+title: 07 实现 bean 初始化、摧毁方法的配置与处理
+---
+
+
+
 ### 前言
+
 spring支持我们自定义 bean 的初始化方法和摧毁方法。配置方式可以通过 xml 的 `init-method` 和 `destory-method`配置，或者实现 `InitializingBean`、`DisposableBean`接口，来完成自定义的初始化和bean的销毁。
 在项目开发过程中，相信最多看到的是 `@PostConstruct` 注解标识的方法来进行bean的初始化。
 > @PostConstruct 是 Spring Framework 提供的注解，可以用于在 Bean 实例化之后执行初始化操作
