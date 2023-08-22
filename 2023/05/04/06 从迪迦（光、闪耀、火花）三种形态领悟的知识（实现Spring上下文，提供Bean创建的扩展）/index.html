@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="huangle"><meta name="copyright" content="huangle"><meta name="generator" content="Hexo 6.3.0"><meta name="theme" content="hexo-theme-yun"><title>实现Spring上下文，提供Bean创建的扩展 | Anoxia小屋</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"anoxia77.github.io","root":"/","title":"阿乐的小站","version":"1.10.9","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://el-bot-api.vercel.app/api/words/young"},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" async></script><meta name="description" content="前言上一节，我们已经完成通过 xml 配置文件 实现 Bean 的注入。这一节是重头戏，老实说，我现在都还弄的很明白。这是第二遍看这个过程了，还是有点云里雾里的。但是相对于第一次来说，已经上升了一个高度。在这一节，会对 spring 创建 bean 的过程进行封装。并且提供 BeanPostProcessor,BeanFactoryPostProcessor等扩展接口。（这两个东西老强了）上下文把">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现Spring上下文，提供Bean创建的扩展">
+<meta property="og:url" content="https://anoxia77.github.io/2023/05/04/06%20%E4%BB%8E%E8%BF%AA%E8%BF%A6%EF%BC%88%E5%85%89%E3%80%81%E9%97%AA%E8%80%80%E3%80%81%E7%81%AB%E8%8A%B1%EF%BC%89%E4%B8%89%E7%A7%8D%E5%BD%A2%E6%80%81%E9%A2%86%E6%82%9F%E7%9A%84%E7%9F%A5%E8%AF%86%EF%BC%88%E5%AE%9E%E7%8E%B0Spring%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%8C%E6%8F%90%E4%BE%9BBean%E5%88%9B%E5%BB%BA%E7%9A%84%E6%89%A9%E5%B1%95%EF%BC%89/index.html">
+<meta property="og:site_name" content="Anoxia小屋">
+<meta property="og:description" content="前言上一节，我们已经完成通过 xml 配置文件 实现 Bean 的注入。这一节是重头戏，老实说，我现在都还弄的很明白。这是第二遍看这个过程了，还是有点云里雾里的。但是相对于第一次来说，已经上升了一个高度。在这一节，会对 spring 创建 bean 的过程进行封装。并且提供 BeanPostProcessor,BeanFactoryPostProcessor等扩展接口。（这两个东西老强了）上下文把">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2023/03/06/e38004593280d01d.png#id=qYU9z&originHeight=810&originWidth=1100&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2023/03/06/c64cd049f7c6f638.png#id=yOjvb&originHeight=78&originWidth=876&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2023/03/06/4cf9604d5a5d2e33.png#id=HtKRJ&originHeight=124&originWidth=730&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
+<meta property="article:published_time" content="2023-05-04T02:02:36.240Z">
+<meta property="article:modified_time" content="2023-05-04T02:02:36.241Z">
+<meta property="article:author" content="huangle">
+<meta property="article:tag" content="JAVA，摄影，后端">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s3.bmp.ovh/imgs/2023/03/06/e38004593280d01d.png#id=qYU9z&originHeight=810&originWidth=1100&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="huangle"><img width="96" loading="lazy" src="/yun.png" alt="huangle"></a><div class="site-author-name"><a href="/about/">huangle</a></div><span class="site-name">Anoxia小屋</span><sub class="site-subtitle">知道的越多，不知道的越多</sub><div class="site-description">知识备份</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">16</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">0</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">0</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:settings-line"></span></span></a></nav><hr style="margin-bottom:0.5rem"><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:genderless-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanPostProcessor-Bean-%E5%88%9B%E5%BB%BA%E5%AE%8C%E6%88%90%E5%89%8D%E5%90%8E%E6%89%A9%E5%B1%95%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.1.</span> <span class="toc-text">BeanPostProcessor Bean 创建完成前后扩展接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanFactoryPostProcessor-beanDefinition-%E5%8A%A0%E8%BD%BD%E5%AE%8C%E6%88%90%E5%90%8E%E6%89%A9%E5%B1%95%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.2.</span> <span class="toc-text">BeanFactoryPostProcessor beanDefinition 加载完成后扩展接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AbstractApplicationContext-%E7%BB%9F%E4%B8%80%E5%A4%84%E7%90%86%E6%8A%BD%E8%B1%A1%E7%B1%BB"><span class="toc-number">2.3.</span> <span class="toc-text">AbstractApplicationContext 统一处理抽象类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AbstractAutowireCapableBeanFactory-createBean-%E7%BB%9F%E4%B8%80%E5%A4%84%E7%90%86bean%E6%89%A9%E5%B1%95%E9%80%BB%E8%BE%91"><span class="toc-number">2.4.</span> <span class="toc-text">AbstractAutowireCapableBeanFactory#createBean 统一处理bean扩展逻辑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-number">3.</span> <span class="toc-text">测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89-MyBeanFactoryPostProcessor%E3%80%81MyBeanPostProcecssor-%E6%89%A9%E5%B1%95%E5%86%85%E5%AE%B9"><span class="toc-number">3.1.</span> <span class="toc-text">定义 MyBeanFactoryPostProcessor、MyBeanPostProcecssor 扩展内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E9%80%BB%E8%BE%91"><span class="toc-number">3.2.</span> <span class="toc-text">业务逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">3.3.</span> <span class="toc-text">配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%B1%BB"><span class="toc-number">3.4.</span> <span class="toc-text">测试类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="https://Anoxia77.github.io/2023/05/04/06%20%E4%BB%8E%E8%BF%AA%E8%BF%A6%EF%BC%88%E5%85%89%E3%80%81%E9%97%AA%E8%80%80%E3%80%81%E7%81%AB%E8%8A%B1%EF%BC%89%E4%B8%89%E7%A7%8D%E5%BD%A2%E6%80%81%E9%A2%86%E6%82%9F%E7%9A%84%E7%9F%A5%E8%AF%86%EF%BC%88%E5%AE%9E%E7%8E%B0Spring%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%8C%E6%8F%90%E4%BE%9BBean%E5%88%9B%E5%BB%BA%E7%9A%84%E6%89%A9%E5%B1%95%EF%BC%89/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="huangle"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Anoxia小屋"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">实现Spring上下文，提供Bean创建的扩展</h1><div class="post-meta"><div class="post-time"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2023-05-04 10:02:36" itemprop="dateCreated datePublished" datetime="2023-05-04T10:02:36+08:00">2023-05-04</time></div><div class="post-classify"></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一节，我们已经完成通过 xml 配置文件 实现 Bean 的注入。这一节是重头戏，老实说，我现在都还弄的很明白。这是第二遍看这个过程了，还是有点云里雾里的。但是相对于第一次来说，已经上升了一个高度。<br>在这一节，会对 spring 创建 bean 的过程进行封装。并且提供 <code>BeanPostProcessor</code>,<code>BeanFactoryPostProcessor</code>等扩展接口。（这两个东西老强了）<br>上下文把整个创建过程包装起来，对外暴露一个简单的入口，其他的东西都在内部实现。（这个过程其实可以类比成 <code>模板方法</code> 是使用，我们直接使用就可以，并不需要知道内部的实现）<br>由于上下文已经封装好了整个bean的创建过程，内部实现对外是不开放的，所以提供了 BeanPostProcessor（bean 创建 之前处理，bean 创建之后处理）、BeanFactoryPostProcessor （对beanDifinition 创建后处理）给 开发者 的扩展接口，在创建bean的过程中，添加自己的实现逻辑。<br><img src="https://s3.bmp.ovh/imgs/2023/03/06/e38004593280d01d.png#id=qYU9z&originHeight=810&originWidth=1100&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=" loading="lazy"></p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="BeanPostProcessor-Bean-创建完成前后扩展接口"><a href="#BeanPostProcessor-Bean-创建完成前后扩展接口" class="headerlink" title="BeanPostProcessor Bean 创建完成前后扩展接口"></a>BeanPostProcessor Bean 创建完成前后扩展接口</h3><p>它可以在 Bean 实例化、依赖注入、初始化前后等时刻对 Bean 进行一些额外的处理，例如修改 Bean 属性、动态代理等等。<br>这个类使用了<code>模板方法</code>模式。扩展类只需实现该接口，然后spring会在创建的bean的过程中调用这个方法完成 对bean的修改。<br>spring 在获取所有的 扩展类并完成扩展使用的是<code>装饰器模式</code>，每个 扩展类都可以类比成一个<code>装饰器</code>,然后通过<code>责任链</code>的方式完成调用。</p>
+<blockquote>
+<p><strong>模板方法：</strong>模板方法是一种行为设计模式，它定义了一个过程的<code>骨架</code>，并允许子类在不改变该过程结构的情况下重新定义某些步骤。<br><strong>装饰器模式：</strong>装饰器模式是一种结构型设计模式，它允许动态地向对象添加新的行为，同时又不会改变其原有的行为。该模式通过一种装饰器类来包装原有的类，从而给对象增加新的功能。<br><strong>责任链模式</strong>：责任链模式是一种行为型设计模式，它将多个处理器（Handler）组成一条链，用于依次处理请求，直到请求被处理完成为止。在责任链模式中，每个处理器都有一个指向下一个处理器的引用，从而形成了一条处理链。</p>
+</blockquote>
+<p>在实际开发过程中，我们也可以尝试使用这些设计模式来优化我们的代码。在这个扩展接口的实现过程，我们可以学到 <code>模板</code> +<code>装饰器</code> +<code>责任链</code>的一种使用场景。很多时候，单独是设计模式并不能很好地解决问题，但是当我们把他们组合到一起的时候，他就会变成一种很<code>优雅的解决方案</code>.</p>
+<pre class="language-java" data-language="java"><code class="language-java">
+<span class="token comment">/**
+ * @author huangle
+ * @date 2023/2/13 15:18
+ */</span>
+<span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">BeanPostProcessor</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token comment">/**
+     * 在 Bean 对象执行初始化方法之前，执行此方法
+     *
+     * @param bean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */</span>
+    <span class="token class-name">Object</span> <span class="token function">postProcessBeforeInitialization</span><span class="token punctuation">(</span><span class="token class-name">Object</span> bean<span class="token punctuation">,</span> <span class="token class-name">String</span> beanName<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span><span class="token punctuation">;</span>
+
+    <span class="token comment">/**
+     * 在 Bean 对象执行初始化方法之后，执行此方法
+     *
+     * @param bean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */</span>
+    <span class="token class-name">Object</span> <span class="token function">postProcessAfterInitialization</span><span class="token punctuation">(</span><span class="token class-name">Object</span> bean<span class="token punctuation">,</span> <span class="token class-name">String</span> beanName<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span>
+</code></pre>
+<h3 id="BeanFactoryPostProcessor-beanDefinition-加载完成后扩展接口"><a href="#BeanFactoryPostProcessor-beanDefinition-加载完成后扩展接口" class="headerlink" title="BeanFactoryPostProcessor beanDefinition 加载完成后扩展接口"></a>BeanFactoryPostProcessor beanDefinition 加载完成后扩展接口</h3><p>这个扩展设计跟上一个差不多，具体可以看上面的设计</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">BeanFactoryPostProcessor</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token comment">/**
+     * 在所有的 BeanDefinition 加载完成后，实例化 Bean 对象之前，提供修改 BeanDefinition 属性的机制
+     * @param beanFactory
+     */</span>
+    <span class="token keyword">void</span> <span class="token function">postProcessorBeanFactory</span><span class="token punctuation">(</span><span class="token class-name">ConfigurableListableBeanFactory</span> beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span></code></pre>
+<h3 id="AbstractApplicationContext-统一处理抽象类"><a href="#AbstractApplicationContext-统一处理抽象类" class="headerlink" title="AbstractApplicationContext 统一处理抽象类"></a>AbstractApplicationContext 统一处理抽象类</h3><p><code>AbstractApplicationContext</code>完成对逻辑过程的整合，定义统一处理流程，实现过程通过定义抽象方法，交给具体的实现类去完成。<br>这里其实就是对spring容器 初始化做一个 <code>模板处理</code>,只定义基本<code>骨架</code>，具体都交给后面的子类是完成。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">ConfigurableApplicationContext</span> <span class="token keyword">extends</span> <span class="token class-name">ApplicationContext</span><span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">void</span> <span class="token function">refresh</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">/**
+ * @author huangle
+ * @date 2023/2/13 15:15
+ */</span>
+<span class="token keyword">public</span> <span class="token keyword">abstract</span> <span class="token keyword">class</span> <span class="token class-name">AbstractApplicationContext</span> <span class="token keyword">extends</span> <span class="token class-name">DefaultResourceLoader</span> <span class="token keyword">implements</span> <span class="token class-name">ConfigurableApplicationContext</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token comment">/**
+     * 模板方法，控制定义spring上下文的刷新与创建
+     * @throws BeansException
+     */</span>
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">refresh</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// 1. 创建beanFactory，加载beanDefinition</span>
+        <span class="token function">refreshBeanFactory</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 2. 获取 beanFactory</span>
+        <span class="token class-name">ConfigurableListableBeanFactory</span> beanFactory <span class="token operator">=</span> <span class="token function">getBeanFactory</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 3. bean 实例化之前 执行 beanFactoryPostProcessor</span>
+        <span class="token function">invokeBeanFactoryPostProcessors</span><span class="token punctuation">(</span>beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 4. beanPostProcessor 完成 bean 实例化后的注册操作</span>
+        <span class="token function">registerBeanPostProcessors</span><span class="token punctuation">(</span>beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 5. 提前实例化 单例bean 对象</span>
+        beanFactory<span class="token punctuation">.</span><span class="token function">preInstantiateSingletons</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">protected</span> <span class="token keyword">abstract</span> <span class="token keyword">void</span> <span class="token function">refreshBeanFactory</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">protected</span> <span class="token keyword">abstract</span> <span class="token class-name">ConfigurableListableBeanFactory</span> <span class="token function">getBeanFactory</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">/**
+     * 初始化 BeanFactoryPostProcessor 处理器
+     * @param beanFactory
+     */</span>
+    <span class="token keyword">private</span> <span class="token keyword">void</span> <span class="token function">invokeBeanFactoryPostProcessors</span><span class="token punctuation">(</span><span class="token class-name">ConfigurableListableBeanFactory</span> beanFactory<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">BeanFactoryPostProcessor</span><span class="token punctuation">></span></span> beanFactoryPostProcessorMap <span class="token operator">=</span> beanFactory<span class="token punctuation">.</span><span class="token function">getBeansOfType</span><span class="token punctuation">(</span><span class="token class-name">BeanFactoryPostProcessor</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">BeanFactoryPostProcessor</span> factoryPostProcessor <span class="token operator">:</span> beanFactoryPostProcessorMap<span class="token punctuation">.</span><span class="token function">values</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token comment">// 处理 beanDifinition 扩展逻辑</span>
+            factoryPostProcessor<span class="token punctuation">.</span><span class="token function">postProcessorBeanFactory</span><span class="token punctuation">(</span>beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">/**
+     * 初始化 BeanPostProcessor 处理器
+     * @param beanFactory
+     */</span>
+    <span class="token keyword">private</span> <span class="token keyword">void</span> <span class="token function">registerBeanPostProcessors</span><span class="token punctuation">(</span><span class="token class-name">ConfigurableListableBeanFactory</span> beanFactory<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">BeanPostProcessor</span><span class="token punctuation">></span></span> beanPostProcessorMap <span class="token operator">=</span> beanFactory<span class="token punctuation">.</span><span class="token function">getBeansOfType</span><span class="token punctuation">(</span><span class="token class-name">BeanPostProcessor</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">BeanPostProcessor</span> postProcessor <span class="token operator">:</span> beanPostProcessorMap<span class="token punctuation">.</span><span class="token function">values</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            beanFactory<span class="token punctuation">.</span><span class="token function">addBeanPostProcessor</span><span class="token punctuation">(</span>postProcessor<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+<h3 id="AbstractAutowireCapableBeanFactory-createBean-统一处理bean扩展逻辑"><a href="#AbstractAutowireCapableBeanFactory-createBean-统一处理bean扩展逻辑" class="headerlink" title="AbstractAutowireCapableBeanFactory#createBean 统一处理bean扩展逻辑"></a>AbstractAutowireCapableBeanFactory#createBean 统一处理bean扩展逻辑</h3><p>spring流程的核心类，所有的扩展都会在这里汇合，一同作用于spring创建bean的过程。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">abstract</span> <span class="token keyword">class</span> <span class="token class-name">AbstractAutowireCapableBeanFactory</span> <span class="token keyword">extends</span> <span class="token class-name">AbstractBeanFactory</span> <span class="token keyword">implements</span> <span class="token class-name">AutowireCapableBeanFactory</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">private</span> <span class="token class-name">CglibSubclassingInstantiationStrategy</span> instantiationStrategy <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">CglibSubclassingInstantiationStrategy</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token class-name">Object</span> <span class="token function">createBean</span><span class="token punctuation">(</span><span class="token class-name">String</span> beanName<span class="token punctuation">,</span> <span class="token class-name">BeanDefinition</span> beanDefinition<span class="token punctuation">,</span> <span class="token class-name">Object</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Object</span> bean <span class="token operator">=</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            bean <span class="token operator">=</span> <span class="token function">createBeanInstance</span><span class="token punctuation">(</span>beanDefinition<span class="token punctuation">,</span> beanName<span class="token punctuation">,</span> args<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 注入属性</span>
+            <span class="token function">applyPropertyValues</span><span class="token punctuation">(</span>beanName<span class="token punctuation">,</span> bean<span class="token punctuation">,</span> beanDefinition<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 提供给外部的扩展包装，执行 Bean 的初始化方法和 BeanPostProcessor 的前置和后置处理方法</span>
+            bean <span class="token operator">=</span> <span class="token function">initializeBean</span><span class="token punctuation">(</span>beanName<span class="token punctuation">,</span> bean<span class="token punctuation">,</span> beanDefinition<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">RuntimeException</span><span class="token punctuation">(</span><span class="token string">"bean create error!"</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">registerSingleton</span><span class="token punctuation">(</span>beanName<span class="token punctuation">,</span> bean<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> bean<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">private</span> <span class="token class-name">Object</span> <span class="token function">initializeBean</span><span class="token punctuation">(</span><span class="token class-name">String</span> beanName<span class="token punctuation">,</span> <span class="token class-name">Object</span> bean<span class="token punctuation">,</span> <span class="token class-name">BeanDefinition</span> beanDefinition<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// 1. 执行 BeanPostProcess before 操作</span>
+        <span class="token class-name">Object</span> wrappedBean <span class="token operator">=</span> <span class="token function">applyBeanPostProcessorsBeforeInitialization</span><span class="token punctuation">(</span>bean<span class="token punctuation">,</span> beanName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">invokeInitMethods</span><span class="token punctuation">(</span>beanName<span class="token punctuation">,</span>wrappedBean<span class="token punctuation">,</span>beanDefinition<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 2. 执行 BeanPostProcess after 操作</span>
+        wrappedBean <span class="token operator">=</span> <span class="token function">applyBeanPostProcessorsAfterInitialization</span><span class="token punctuation">(</span>bean<span class="token punctuation">,</span>beanName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">return</span> wrappedBean<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">void</span> <span class="token function">invokeInitMethods</span><span class="token punctuation">(</span><span class="token class-name">String</span> beanName<span class="token punctuation">,</span> <span class="token class-name">Object</span> wrappedBean<span class="token punctuation">,</span> <span class="token class-name">BeanDefinition</span> beanDefinition<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+
+    <span class="token punctuation">&#125;</span>
+
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token class-name">Object</span> <span class="token function">applyBeanPostProcessorsBeforeInitialization</span><span class="token punctuation">(</span><span class="token class-name">Object</span> existingBean<span class="token punctuation">,</span> <span class="token class-name">String</span> beanName<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Object</span> result <span class="token operator">=</span> existingBean<span class="token punctuation">;</span>
+        <span class="token comment">// 责任链模式 去获取到用户的扩展内容，然后在这里统一去处理</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">BeanPostProcessor</span> beanPostProcessor <span class="token operator">:</span> <span class="token function">getBeanPostProcessors</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Object</span> current <span class="token operator">=</span> beanPostProcessor<span class="token punctuation">.</span><span class="token function">postProcessBeforeInitialization</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> beanName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>current <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            result <span class="token operator">=</span> current<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token class-name">Object</span> <span class="token function">applyBeanPostProcessorsAfterInitialization</span><span class="token punctuation">(</span><span class="token class-name">Object</span> existingBean<span class="token punctuation">,</span> <span class="token class-name">String</span> beanName<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+       <span class="token class-name">Object</span> result <span class="token operator">=</span> existingBean<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">BeanPostProcessor</span> beanPostProcessor <span class="token operator">:</span> <span class="token function">getBeanPostProcessors</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Object</span> current <span class="token operator">=</span> beanPostProcessor<span class="token punctuation">.</span><span class="token function">postProcessAfterInitialization</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> beanName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>current <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+                <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            result <span class="token operator">=</span> current<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><h3 id="定义-MyBeanFactoryPostProcessor、MyBeanPostProcecssor-扩展内容"><a href="#定义-MyBeanFactoryPostProcessor、MyBeanPostProcecssor-扩展内容" class="headerlink" title="定义 MyBeanFactoryPostProcessor、MyBeanPostProcecssor 扩展内容"></a>定义 MyBeanFactoryPostProcessor、MyBeanPostProcecssor 扩展内容</h3><pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">/**
+ * @author huangle
+ * @date 2023/3/3 15:55
+ */</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MyBeanFactoryPostProcessor</span> <span class="token keyword">implements</span> <span class="token class-name">BeanFactoryPostProcessor</span> <span class="token punctuation">&#123;</span>
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">postProcessorBeanFactory</span><span class="token punctuation">(</span><span class="token class-name">ConfigurableListableBeanFactory</span> beanFactory<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">BeanDefinition</span> userService <span class="token operator">=</span> beanFactory<span class="token punctuation">.</span><span class="token function">getBeanDefinition</span><span class="token punctuation">(</span><span class="token string">"userService"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">PropertyValues</span> propertyValues <span class="token operator">=</span> userService<span class="token punctuation">.</span><span class="token function">getPropertyValues</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">PropertyValue</span> propertyValue <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PropertyValue</span><span class="token punctuation">(</span><span class="token string">"nickname"</span><span class="token punctuation">,</span> <span class="token string">"泰罗"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        propertyValues<span class="token punctuation">.</span><span class="token function">addPropertyValue</span><span class="token punctuation">(</span>propertyValue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token comment">/**
+ * @author huangle
+ * @date 2023/3/3 15:03
+ */</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MyBeanPostProcecssor</span> <span class="token keyword">implements</span> <span class="token class-name">BeanPostProcessor</span> <span class="token punctuation">&#123;</span>
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token class-name">Object</span> <span class="token function">postProcessBeforeInitialization</span><span class="token punctuation">(</span><span class="token class-name">Object</span> bean<span class="token punctuation">,</span> <span class="token class-name">String</span> beanName<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token string">"userService"</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>beanName<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">UserService</span> userService <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">UserService</span><span class="token punctuation">)</span> bean<span class="token punctuation">;</span>
+            userService<span class="token punctuation">.</span><span class="token function">setName</span><span class="token punctuation">(</span><span class="token string">"海绵宝宝"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> bean<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token annotation punctuation">@Override</span>
+    <span class="token keyword">public</span> <span class="token class-name">Object</span> <span class="token function">postProcessAfterInitialization</span><span class="token punctuation">(</span><span class="token class-name">Object</span> bean<span class="token punctuation">,</span> <span class="token class-name">String</span> beanName<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> bean<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+<h3 id="业务逻辑"><a href="#业务逻辑" class="headerlink" title="业务逻辑"></a>业务逻辑</h3><pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">UserDao</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">public</span> <span class="token class-name">String</span> <span class="token function">getUserName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token string">"Anoxia"</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">UserService</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">private</span> <span class="token class-name">String</span> name<span class="token punctuation">;</span>
+
+    <span class="token keyword">private</span> <span class="token class-name">String</span> nickname<span class="token punctuation">;</span>
+
+    <span class="token keyword">private</span> <span class="token class-name">UserDao</span> userDao<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token class-name">UserService</span><span class="token punctuation">(</span><span class="token class-name">String</span> name<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token class-name">String</span> <span class="token function">say</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> userDao<span class="token punctuation">.</span><span class="token function">getUserName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">+</span><span class="token string">" say hello "</span><span class="token operator">+</span>name <span class="token operator">+</span> <span class="token string">"and"</span> <span class="token operator">+</span> nickname<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+</code></pre>
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token prolog">&lt;?xml version="1.0" encoding="UTF-8"?></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>beans</span><span class="token punctuation">></span></span>
+
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>bean</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>userDao<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>cn.anoxia.springframework.beans.factory.support.UserDao<span class="token punctuation">"</span></span><span class="token punctuation">/></span></span>
+
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>bean</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>userService<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>cn.anoxia.springframework.beans.factory.support.UserService<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>property</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>name<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Anoxia<span class="token punctuation">"</span></span><span class="token punctuation">/></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>property</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>nickname<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>迪迦<span class="token punctuation">"</span></span><span class="token punctuation">/></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>property</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>userDao<span class="token punctuation">"</span></span> <span class="token attr-name">ref</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>userDao<span class="token punctuation">"</span></span><span class="token punctuation">/></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>bean</span><span class="token punctuation">></span></span>
+
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>bean</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>myBeanPostProcecssor<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>cn.anoxia.springframework.beans.factory.support.MyBeanPostProcecssor<span class="token punctuation">"</span></span><span class="token punctuation">/></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>bean</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>myFactoryPostProcessor<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>cn.anoxia.springframework.beans.factory.support.MyBeanFactoryPostProcessor<span class="token punctuation">"</span></span><span class="token punctuation">/></span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>beans</span><span class="token punctuation">></span></span></code></pre>
+<h3 id="测试类"><a href="#测试类" class="headerlink" title="测试类"></a>测试类</h3><p><code>testContext</code> 测试 手动创建工厂、创建处理类，注入。<code>testContext1</code>测试自动读取xml文件，自动注入</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Test</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">testContext</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// 1. 初始化bean工厂</span>
+        <span class="token class-name">DefaultListableBeanFactory</span> beanFactory <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">DefaultListableBeanFactory</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 2. 定义读取xml处理器,加载bean</span>
+        <span class="token class-name">XmlBeanDefinitionReader</span> definitionReader <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">XmlBeanDefinitionReader</span><span class="token punctuation">(</span>beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        definitionReader<span class="token punctuation">.</span><span class="token function">loadBeanDefinitions</span><span class="token punctuation">(</span><span class="token string">"classpath:spring.xml"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 3. BeanDefinition 加载完成 &amp; Bean实例化之前，修改 BeanDefinition 的属性值</span>
+        <span class="token class-name">MyBeanFactoryPostProcessor</span> factoryPostProcessor <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">MyBeanFactoryPostProcessor</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        factoryPostProcessor<span class="token punctuation">.</span><span class="token function">postProcessorBeanFactory</span><span class="token punctuation">(</span>beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 4. Bean实例化之后，修改 Bean 属性信息</span>
+        <span class="token class-name">MyBeanPostProcecssor</span> postProcecssor <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">MyBeanPostProcecssor</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        beanFactory<span class="token punctuation">.</span><span class="token function">addBeanPostProcessor</span><span class="token punctuation">(</span>postProcecssor<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">UserService</span> userService <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">UserService</span><span class="token punctuation">)</span> beanFactory<span class="token punctuation">.</span><span class="token function">getBean</span><span class="token punctuation">(</span><span class="token string">"userService"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>userService<span class="token punctuation">.</span><span class="token function">say</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token annotation punctuation">@Test</span>
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">testContext1</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">BeansException</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">ClassPathXmlApplicationContext</span> applicationContext <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ClassPathXmlApplicationContext</span><span class="token punctuation">(</span><span class="token string">"classpath:spring.xml"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">UserService</span> userService <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">UserService</span><span class="token punctuation">)</span> applicationContext<span class="token punctuation">.</span><span class="token function">getBean</span><span class="token punctuation">(</span><span class="token string">"userService"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>userService<span class="token punctuation">.</span><span class="token function">say</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span></code></pre>
+<p>测试结果<br><img src="https://s3.bmp.ovh/imgs/2023/03/06/c64cd049f7c6f638.png#id=yOjvb&originHeight=78&originWidth=876&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=" loading="lazy"><br><img src="https://s3.bmp.ovh/imgs/2023/03/06/4cf9604d5a5d2e33.png#id=HtKRJ&originHeight=124&originWidth=730&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=" loading="lazy"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这一节是学习spring过程中比较难的一节，如果学明白了这一节，对spring的扩展基本就理解了。学习的过程很枯燥，有很多时候，遇到一点问题就想放弃，没有一追到底的毅力。其实我感觉嗷，学起来累，学不明白，还是自己会的东西太少了，导致上下连不起了，贯通不了，导致寸步难行，继而放弃。<br>怎么说呢，写代码这东西真的没有什么捷径，多写，多写，多写。只看不写，每一次有问题又是去copy，永远也不会。</p>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><span class="icon iconify" data-icon="ri:hand-coin-line"></span></span><div id="reward-comment">I'm so cute. Please give me money.</div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>huangle</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="https://anoxia77.github.io/2023/05/04/06%20%E4%BB%8E%E8%BF%AA%E8%BF%A6%EF%BC%88%E5%85%89%E3%80%81%E9%97%AA%E8%80%80%E3%80%81%E7%81%AB%E8%8A%B1%EF%BC%89%E4%B8%89%E7%A7%8D%E5%BD%A2%E6%80%81%E9%A2%86%E6%82%9F%E7%9A%84%E7%9F%A5%E8%AF%86%EF%BC%88%E5%AE%9E%E7%8E%B0Spring%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%8C%E6%8F%90%E4%BE%9BBean%E5%88%9B%E5%BB%BA%E7%9A%84%E6%89%A9%E5%B1%95%EF%BC%89/" title="实现Spring上下文，提供Bean创建的扩展">https://anoxia77.github.io/2023/05/04/06%20%E4%BB%8E%E8%BF%AA%E8%BF%A6%EF%BC%88%E5%85%89%E3%80%81%E9%97%AA%E8%80%80%E3%80%81%E7%81%AB%E8%8A%B1%EF%BC%89%E4%B8%89%E7%A7%8D%E5%BD%A2%E6%80%81%E9%A2%86%E6%82%9F%E7%9A%84%E7%9F%A5%E8%AF%86%EF%BC%88%E5%AE%9E%E7%8E%B0Spring%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%8C%E6%8F%90%E4%BE%9BBean%E5%88%9B%E5%BB%BA%E7%9A%84%E6%89%A9%E5%B1%95%EF%BC%89/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/2023/05/04/07%20%E5%AE%9E%E7%8E%B0bean%E5%88%9D%E5%A7%8B%E5%8C%96%E3%80%81%E6%91%A7%E6%AF%81%E6%96%B9%E6%B3%95%E7%9A%84%E6%B3%A8%E5%85%A5/" rel="prev" title="07 实现 bean 初始化、摧毁方法的配置与处理"><span class="icon iconify" data-icon="ri:arrow-left-s-line"></span><span class="post-nav-text">07 实现 bean 初始化、摧毁方法的配置与处理</span></a></div><div class="post-nav-item"><a class="post-nav-next" href="/2023/04/14/04%20%E5%85%B3%E4%BA%8E%E5%A5%A5%E7%89%B9%E6%9B%BC%E5%8F%98%E6%88%90%E8%BF%AA%E8%BF%A6%E8%BF%87%E7%A8%8B(Bean%E7%9A%84%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5)/" rel="next" title="Bean的属性注入"><span class="post-nav-text">Bean的属性注入</span><span class="icon iconify" data-icon="ri:arrow-right-s-line"></span></a></div></div></div><div class="hty-card" id="comment"></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2019 – 2023 </span><span class="with-love" id="animate"><span class="icon iconify" data-icon="ri:cloud-line"></span></span><span class="author"> huangle</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.3.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.10.9</span></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a><script src="https://fastly.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script><script>const images = [...document.querySelectorAll('.markdown-body img')]
+mediumZoom(images)</script><style>.medium-zoom-image {
+  z-index: 99;
+}</style></body></html>
